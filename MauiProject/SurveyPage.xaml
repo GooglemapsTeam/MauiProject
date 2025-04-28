@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Emotional_Map.SurveyPage"
+             Title="Стартовый опрос">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Label Text="1. Как вы себя чувствуете прямо сейчас?"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+
+            <RadioButton GroupName="q1" Content="Отлично! Полон энергии." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q1" Content="Нормально, но чего-то не хватает." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q1" Content="Немного грустно/устало." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q1" Content="Очень подавлен/тревожно." CheckedChanged="OnAnswerSelected"/>
+
+            <Label Text="2. Что больше всего хотелось бы сейчас?"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,15,0,0"/>
+
+            <RadioButton GroupName="q2" Content="Вдохновиться и зарядиться позитивом." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q2" Content="Спокойно отдохнуть и расслабиться." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q2" Content="Развлечься и отвлечься от проблем." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q2" Content="Побыть на природе и восстановить силы." CheckedChanged="OnAnswerSelected"/>
+
+            <Label Text="3. Что для вас важнее всего в месте для отдыха?"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,15,0,0"/>
+
+            <RadioButton GroupName="q3" Content="Красивый вид и атмосфера." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q3" Content="Тишина и уединение." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q3" Content="Возможность активно провести время (спорт, игры)." CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q3" Content="Удобное расположение и доступность." CheckedChanged="OnAnswerSelected"/>
+
+            <Label Text="4. Что может улучшить ваше настроение? (Выберите один или несколько вариантов)"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,15,0,0"/>
+
+            <HorizontalStackLayout>
+                <CheckBox x:Name="q4a" CheckedChanged="OnCheckBoxCheckedChanged"/>
+                <Label Text="Солнечная погода" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <CheckBox x:Name="q4b" CheckedChanged="OnCheckBoxCheckedChanged"/>
+                <Label Text="Вкусная еда/напитки" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <CheckBox x:Name="q4c" CheckedChanged="OnCheckBoxCheckedChanged"/>
+                <Label Text="Музыка/развлечения" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <CheckBox x:Name="q4d" CheckedChanged="OnCheckBoxCheckedChanged"/>
+                <Label Text="Животные (например, собаки в парке)" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <CheckBox x:Name="q4e" CheckedChanged="OnCheckBoxCheckedChanged"/>
+                <Label Text="Новые впечатления" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+
+            <Label Text="5. Какое время дня вам больше всего подходит для отдыха?"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,15,0,0"/>
+
+            <RadioButton GroupName="q5" Content="Утро" CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q5" Content="День" CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q5" Content="Вечер" CheckedChanged="OnAnswerSelected"/>
+            <RadioButton GroupName="q5" Content="Все равно" CheckedChanged="OnAnswerSelected"/>
+
+            <Button Text="Сохранить ответы"
+                    Clicked="OnSubmitClicked"
+                    Margin="0,30,0,0"
+                    HorizontalOptions="Center"
+                    WidthRequest="200"
+                    IsEnabled="False"
+                    x:Name="SubmitButton"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
