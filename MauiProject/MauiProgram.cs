@@ -1,28 +1,25 @@
-﻿namespace MenuFormExample;
+﻿using Microsoft.Extensions.Logging;
 
-public partial class MainPage : ContentPage
+namespace Emotional_Map
 {
-    public MainPage()
+    public static class MauiProgram
     {
-        InitializeComponent();
-    }
-
-    private async void OnOpenMenuButtonClicked(object sender, EventArgs e)
-    {
-        // Создаем экземпляр страницы меню.
-        var menuPage = new MenuPage();
-
-        // Подписываемся на событие MenuItemSelected, чтобы получить результат.
-        menuPage.MenuItemSelected += (s, args) =>
+        public static MauiApp CreateMauiApp()
         {
-            // Устанавливаем текст в метке на основной странице.
-            ResultLabel.Text = $"Вы выбрали: {args.SelectedItem}";
+            var builder = MauiApp.CreateBuilder();
+            builder
+                .UseMauiApp<App>()
+                .ConfigureFonts(fonts =>
+                {
+                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                });
 
-            // Закрываем модальное окно меню.
-            Navigation.PopModalAsync();
-        };
+#if DEBUG
+            builder.Logging.AddDebug();
+#endif
 
-        // Отображаем страницу меню как модальное окно.
-        await Navigation.PushModalAsync(menuPage);
+            return builder.Build();
+        }
     }
 }

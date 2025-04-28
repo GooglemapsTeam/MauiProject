@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Emotional_Map.MenuPage"
+             Title="Главное меню">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30,20"
+            Spacing="25">
+
+            <Label Text="Меню 'Эмоциональной карты'"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <BoxView HeightRequest="1" Color="LightGray" HorizontalOptions="Fill"/>
+
+            <Button Text="Перепройти опрос"
+                    Clicked="OnSurveyClicked"
+                    CornerRadius="10"
+                    HeightRequest="60"/>
+
+            <Button Text="Настройки"
+                    Clicked="OnSettingsClicked"
+                    CornerRadius="10"
+                    HeightRequest="60"/>
+
+
+            <Button Text="Выйти"
+                    Clicked="OnExitClicked"
+                    BackgroundColor="LightPink"
+                    CornerRadius="10"
+                    HeightRequest="60"/>
+
+            <Label Text="_"
+                   x:Name="q1"/>
+            <Label Text="_"
+                   x:Name="q2"/>
+            <Label Text="_"
+                    x:Name="q3"/>
+            <Label Text="_"
+                    x:Name="q4"/>
+            <Label Text="_"
+                    x:Name="q5"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
