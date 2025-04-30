@@ -9,7 +9,7 @@ public partial class SecondSurveyPage : ContentPage
 
     private async void OnNextClicked(object sender, EventArgs e)
     {
-        await Navigation.PushAsync(new FirstSurveyPage());
+        await Navigation.PushAsync(new ThirdSurveyPage());
     }
 
 }

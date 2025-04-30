@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Emotional_Map.FourthSurveyPage"
+             Title="FourthSurveyPage"
+             BackgroundColor="White">
+    <Grid Padding="0, 20, 0, 20">
+        <Image Source="stain.png" 
+           Aspect="AspectFit"/>
+        <VerticalStackLayout VerticalOptions="Start" WidthRequest="300">
+            <Label Text="Давайте поможем вам найти идеальное место для хорошего настроения"
+               FontSize="20"
+               TextColor="Black"
+               HorizontalOptions="Center"
+               HorizontalTextAlignment="Center"/>
+            <Label Text="Что больше всего хотелось бы сейчас?"
+                FontSize="25"
+                TextColor="Black"
+                Margin="0, 40, 0, 0"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout VerticalOptions="Center" Padding="0, 20, 0, 20" HorizontalOptions="Center">
+            <Button Text="Вдохновиться и зарядиться позитивом"
+                Clicked="OnAnswerSelected"
+                IsEnabled="True"
+                BackgroundColor="#E6F9FF"
+                TextColor="Black"
+                WidthRequest="300"
+                Margin="0, 20, 0, 0">
+                <Button.Shadow>
+                    <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
+
+            <Button Text="Спокойно отдохнуть и расслабиться"
+                Clicked="OnAnswerSelected"
+                IsEnabled="True"
+                BackgroundColor="#E6F9FF"
+                TextColor="Black"
+                WidthRequest="300"
+                Margin="0, 20, 0, 0">
+                <Button.Shadow>
+                    <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
+
+            <Button Text="Развлечься и отвлечься от проблем"
+                Clicked="OnAnswerSelected"
+                IsEnabled="True"
+                BackgroundColor="#E6F9FF"
+                TextColor="Black"
+                WidthRequest="300"
+                Margin="0, 20, 0, 0">
+                <Button.Shadow>
+                    <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
+
+            <Button Text="Побыть на природе и восстановить силы"
+                Clicked="OnAnswerSelected"
+                IsEnabled="True"
+                BackgroundColor="#E6F9FF"
+                TextColor="Black"
+                WidthRequest="300"
+                Margin="0, 20, 0, 0">
+                <Button.Shadow>
+                    <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
+            
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>
