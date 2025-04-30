@@ -69,10 +69,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="FirstSurveyPage.xaml.cs">
+	    <DependentUpon>FirstSurveyPage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <MauiXaml Update="MenuPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="SurveyPage.xaml">
+	  <MauiXaml Update="FirstSurveyPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

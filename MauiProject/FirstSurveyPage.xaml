@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Emotional_Map.FirstSurveyPage"
+             BackgroundColor="White">
+
+    <Grid Padding="0, 20, 0, 20">
+        <Image Source="stain.png" 
+               Aspect="AspectFit"/>
+        <Label Text="Давайте познакомимся!"
+                   FontSize="30"
+                   TextColor="Black"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Start"/>
+
+        <Entry Placeholder="Введите имя"
+                   FontSize="15"
+                   PlaceholderColor="#757575"
+                   
+                   TextColor="Black"
+                   BackgroundColor="#E6F9FF"
+                   x:Name="NameEntry"
+                   TextChanged="NameEntryTextChanged"
+                   VerticalOptions="Center"
+                   WidthRequest="300">
+            <Entry.Shadow>
+                <Shadow Opacity="0.25" 
+                            Radius="4" 
+                            Offset="0, 4"/>
+            </Entry.Shadow>
+            <Entry.Keyboard>
+                <Keyboard x:FactoryMethod="Create">
+                    <x:Arguments>
+                        <KeyboardFlags>CapitalizeWord</KeyboardFlags>
+                    </x:Arguments>
+                </Keyboard>
+            </Entry.Keyboard>
+        </Entry>
+
+        <Button Text="Продолжить"
+                    Clicked="OnNextClicked"
+                    HorizontalOptions="Center"
+                    IsEnabled="False"
+                    x:Name="NextButton"
+                    BackgroundColor="#E6F9FF"
+                    TextColor="#757575"
+                    VerticalOptions="End">
+            <Button.Shadow>
+                <Shadow Opacity="0.25" 
+                            Radius="4" 
+                            Offset="0, 4"/>
+            </Button.Shadow>
+        </Button>
+
+    </Grid>
+</ContentPage>
