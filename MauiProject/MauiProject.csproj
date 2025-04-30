@@ -61,6 +61,7 @@
 
 	<ItemGroup>
 	  <Compile Remove="MenuPage.cs" />
+	  <Compile Remove="SecondSurveyPage.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -79,6 +80,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="FirstSurveyPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="SecondSurveyPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>
