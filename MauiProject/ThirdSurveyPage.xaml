@@ -21,7 +21,7 @@
                 HorizontalTextAlignment="Center"/>
         </VerticalStackLayout>
 
-        <VerticalStackLayout VerticalOptions="Center" Padding="0, 20, 0, 20" HorizontalOptions="Center">
+        <VerticalStackLayout VerticalOptions="Center" Margin="0, 80, 0, 0" HorizontalOptions="Center">
             <Button Text="Отлично! Полон энергии"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
