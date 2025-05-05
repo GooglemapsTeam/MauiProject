@@ -84,6 +84,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="MainPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="SixthSurveyPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

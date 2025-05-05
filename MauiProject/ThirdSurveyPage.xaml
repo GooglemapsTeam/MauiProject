@@ -8,8 +8,8 @@
         <Image Source="stain.png" 
            Aspect="AspectFit"/>
         <VerticalStackLayout VerticalOptions="Start" WidthRequest="300">
-            <Label Text="Давайте поможем вам найти идеальное место для хорошего настроения"
-               FontSize="20"
+            <Label Text="Пройдите короткий тест и получите персонализированный маршрут для улучшения настроения"
+               FontSize="15"
                TextColor="Black"
                HorizontalOptions="Center"
                HorizontalTextAlignment="Center"/>
@@ -28,7 +28,8 @@
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
-                Margin="0, 20, 0, 0">
+                Margin="0, 20, 0, 0"
+                ImageSource="excellent_smile.png">
                 <Button.Shadow>
                     <Shadow Opacity="0.25" 
                         Radius="4" 
@@ -42,7 +43,8 @@
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
-                Margin="0, 20, 0, 0">
+                Margin="0, 20, 0, 0"
+                ImageSource="normal_smile.png">
                 <Button.Shadow>
                     <Shadow Opacity="0.25" 
                         Radius="4" 
@@ -62,6 +64,7 @@
                         Radius="4" 
                         Offset="0, 4"/>
                 </Button.Shadow>
+                
             </Button>
 
             <Button Text="Очень подавлен/тревожно"
@@ -70,7 +73,8 @@
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
-                Margin="0, 20, 0, 0">
+                Margin="0, 20, 0, 0"
+                ImageSource="depressed_smile.png">
                 <Button.Shadow>
                     <Shadow Opacity="0.25" 
                         Radius="4" 

@@ -11,7 +11,7 @@ public partial class SixthSurveyPage : ContentPage
     {
         var button = (Button)sender;
 		Preferences.Set("Time", button.Text);
-        Navigation.PushAsync(new MenuPage());
+        Navigation.PushAsync(new MainPage());
     }
 
 }

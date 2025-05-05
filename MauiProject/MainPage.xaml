@@ -1,0 +1,54 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Emotional_Map.MainPage"
+             Title="MainPage"
+             BackgroundColor="#E6F9FF">
+    <VerticalStackLayout Padding="0, 20, 0, 20" HorizontalOptions="Center" VerticalOptions="Center">
+
+        <Frame CornerRadius="20"
+               BackgroundColor="#FFFEFE"
+               WidthRequest="300"
+               HeightRequest="125"
+               Padding="0, 0, 0, 0"
+               BorderColor="Transparent">
+
+            <Grid>
+                <Button 
+                    Clicked="ToPath"
+                    IsEnabled="True"
+                    BackgroundColor="White"
+                    BorderColor="Black"
+                    BorderWidth="1"
+                    TextColor="Black"
+                    WidthRequest="15"
+                    HeightRequest="10">
+                    <Button.Shadow>
+                        <Shadow Opacity="0.1" 
+                            Radius="1" 
+                            Offset="1, 1"/>
+                    </Button.Shadow>
+                </Button>
+                
+                <Button
+                    Clicked="CrossClick"
+                    BackgroundColor="Black"
+                    ImageSource="cross_button.png"
+                    Margin="220, 85, 0, 0"
+                    WidthRequest="20"
+                    HeightRequest="20"
+                    x:Name="CrossButton"
+                    />
+                <Button
+                    ClassId="FavouriteClick"
+                    BackgroundColor="Black"
+                    ImageSource="favourite_button.png"
+                    Margin="260, 85, 0, 0"
+                    WidthRequest="20"
+                    HeightRequest="20"
+                    x:Name="FavouriteButton"/>  
+            </Grid>
+
+        </Frame>
+
+    </VerticalStackLayout>
+</ContentPage>
