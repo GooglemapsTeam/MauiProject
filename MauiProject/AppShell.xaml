@@ -6,7 +6,35 @@
     xmlns:local="clr-namespace:Emotional_Map"
     Shell.FlyoutBehavior="Flyout"
     Title="Emotional_Map"
-    Shell.NavBarIsVisible="False">
+    NavBarIsVisible="False">
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:FirstSurveyPage}"
+        Route="FirstSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:SecondSurveyPage}"
+        Route="SecondSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:ThirdSurveyPage}"
+        Route="ThirdSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:FourthSurveyPage}"
+        Route="FourthSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:FifthSurveyPage}"
+        Route="FifthSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:SixthSurveyPage}"
+        Route="SixthSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:MenuPage}"
+        Route="MenuPage"/>
 
     <ShellContent
         ContentTemplate="{DataTemplate local:MainPage}"

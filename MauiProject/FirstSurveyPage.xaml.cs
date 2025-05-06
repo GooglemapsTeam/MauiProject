@@ -10,7 +10,7 @@ public partial class FirstSurveyPage : ContentPage
     private async void OnNextClicked(object sender, EventArgs e)
     {
         Preferences.Set("Name", NameEntry.Text);
-        await Navigation.PushAsync(new SecondSurveyPage());
+        await Shell.Current.GoToAsync("//"+nameof(SecondSurveyPage), true);
     }
 
     public void NameEntryTextChanged(object sender, TextChangedEventArgs e)

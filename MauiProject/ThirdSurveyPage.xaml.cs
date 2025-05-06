@@ -7,11 +7,11 @@ public partial class ThirdSurveyPage : ContentPage
 		InitializeComponent();
 	}
 
-	public void OnAnswerSelected(object sender, EventArgs e)
+	public async void OnAnswerSelected(object sender, EventArgs e)
     {
         var button = (Button)sender;
 		Preferences.Set("Wish", button.Text);
-        Navigation.PushAsync(new FourthSurveyPage());
+        await Shell.Current.GoToAsync("//" + nameof(FourthSurveyPage), true);
     }
 
 }
