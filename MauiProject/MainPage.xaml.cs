@@ -1,3 +1,4 @@
+
 namespace Emotional_Map;
 
 public partial class MainPage : ContentPage
@@ -7,18 +8,9 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
-    private async void ToPath(object sender, EventArgs e)
+    public void ToPath(object sender, EventArgs e)
     {
-        await Navigation.PushAsync(new ThirdSurveyPage());
-    }
-
-    private async void CrossClick(object sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new ThirdSurveyPage());
-    }
-
-    private async void FavouriteClick(object sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new FirstSurveyPage());
+        var button = (Button)sender;
+        Navigation.PushAsync(new FirstSurveyPage());
     }
 }

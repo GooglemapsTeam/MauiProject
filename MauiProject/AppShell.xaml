@@ -9,7 +9,7 @@
     Shell.NavBarIsVisible="False">
 
     <ShellContent
-        ContentTemplate="{DataTemplate local:ThirdSurveyPage}"
-        Route="ThirdSurveyPage"/>
+        ContentTemplate="{DataTemplate local:MainPage}"
+        Route="MainPage"/>
 
 </Shell>
