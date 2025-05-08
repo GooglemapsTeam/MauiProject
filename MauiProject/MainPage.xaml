@@ -4,47 +4,9 @@
              x:Class="Emotional_Map.MainPage"
              Title="MainPage"
              BackgroundColor="#E6F9FF">
-    <VerticalStackLayout Padding="0, 20, 0, 20" HorizontalOptions="Center" VerticalOptions="Center">
+    <ScrollView>
+        <VerticalStackLayout Padding="0, 20, 0, 20" HorizontalOptions="Center" VerticalOptions="Center" x:Name="MainStack" Spacing="20">
 
-        <Frame CornerRadius="20"
-               BackgroundColor="#FFFEFE"
-               WidthRequest="300"
-               HeightRequest="600"
-               Padding="0, 0, 0, 0"
-               BorderColor="Transparent">
-
-            <Grid>
-
-                <ContentView 
-    WidthRequest="75"  
-    HeightRequest="20"  
-    BackgroundColor="Transparent">
-                    <Frame
-        BorderColor="Black"  
-        BackgroundColor="White"
-        CornerRadius="5"
-        Padding="0"
-                        HorizontalOptions="Center"
-        VerticalOptions="Center">
-
-                        <Label 
-            Text="ПРОЙДИ" 
-            FontSize="10"  
-                            HorizontalOptions="Center"
-            VerticalOptions="Center"
-            HorizontalTextAlignment="Center"
-            VerticalTextAlignment="Center"/>
-
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="ToPath"/>
-                            </Frame.GestureRecognizers>
-                    </Frame>
-                </ContentView>
-
-
-            </Grid>
-
-        </Frame>
-
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
