@@ -32,7 +32,8 @@
                    x:Name="NameEntry"
                    TextChanged="NameEntryTextChanged"
                    WidthRequest="300"
-                   HorizontalOptions="Center">
+                   HorizontalOptions="Center"
+                   MaxLength="20">
                 <Entry.Shadow>
                     <Shadow Opacity="0.25" Radius="4" Offset="0, 4"/>
                 </Entry.Shadow>

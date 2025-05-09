@@ -10,6 +10,7 @@ public partial class SeventhSurveyPage : ContentPage
     {
         var button = (Button)sender;
         Preferences.Set("MostSafety", button.Text);
-        await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
+        Navigation.RemovePage(this);
+        await Navigation.PushAsync(new MainPage());
     }
 }

@@ -40,8 +40,13 @@
     <ShellContent
         ContentTemplate="{DataTemplate local:SeventhSurveyPage}"
         Route="SeventhSurveyPage"/>
+    
     <ShellContent
         ContentTemplate="{DataTemplate local:MenuPage}"
         Route="MenuPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:ProfilePage}"
+        Route="ProfilePage"/>
 
 </Shell>

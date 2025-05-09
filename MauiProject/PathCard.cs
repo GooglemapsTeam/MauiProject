@@ -13,9 +13,11 @@ namespace Emotional_Map
         private bool _isFavorited = false;
         private Border _favouriteButton;
 
-        public PathCard(params Place[] place)
+
+        public PathCard(VerticalStackLayout papent, params Place[] place)
         {
             _places = place;
+
             InitializeCard();
         }
 
@@ -271,7 +273,8 @@ namespace Emotional_Map
 
         private async void OnCrossClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
+            //var number = _parent.Children.L
+            //_parent.Children.RemoveAt();
         }
 
         private async void OnFavouriteClicked(object sender, EventArgs e)
@@ -296,5 +299,6 @@ namespace Emotional_Map
         {
             await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
         }
+
     }
 }

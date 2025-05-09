@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Emotional_Map.ProfilePage"
+             Title="ProfilePage"
+             BackgroundColor="#E6F9FF">
+    <VerticalStackLayout HorizontalOptions="Center">
+        <Image Source="profile_button.png" 
+               WidthRequest="60"
+               HeightRequest="60"
+               Margin="0, 75, 0, 10"/>
+
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+            <Label x:Name="NameLabel" 
+                   FontSize="30" 
+                   TextColor="Black"
+                   VerticalOptions="Center"/>
+
+            <Image Source="pencil_button.png" 
+                   WidthRequest="19"
+                   HeightRequest="19"
+                   VerticalOptions="Center">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnChangeNameClicked"/>
+                </Image.GestureRecognizers>
+            </Image>
+        </HorizontalStackLayout>
+
+        <Grid x:Name="EditNameContainer" 
+              IsVisible="False"
+              HorizontalOptions="Center"
+              Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Entry x:Name="NameEntry" 
+                   Grid.Column="0"
+                   WidthRequest="200"
+                   Text="{Binding Source={x:Reference NameLabel}, Path=Text}"
+                   FontSize="20"
+                   HorizontalOptions="Center"
+                   TextColor="Black"
+                   MaxLength="20"/>
+
+            <Button Grid.Column="1"
+                    Text="✓"
+                    FontSize="16"
+                    WidthRequest="40"
+                    BackgroundColor="Transparent"
+                    TextColor="#14D0FF"
+                    Clicked="OnSaveNameClicked"/>
+        </Grid>
+
+        <Button Text="Пройти опрос заново"
+                Clicked="OnSurveyClicked"
+                IsEnabled="True"
+                BackgroundColor="White"
+                TextColor="Black"
+                WidthRequest="300"
+                HeightRequest="50"
+                LineBreakMode="WordWrap"                    
+                Margin="0, 65, 0, 20">
+            <Button.Shadow>
+                <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+            </Button.Shadow>
+        </Button>
+
+        <Button Text="Связь с поддержкой"
+                Clicked="OnConnectionClicked"
+                IsEnabled="True"
+                BackgroundColor="White"
+                TextColor="Black"
+                WidthRequest="300"
+                LineBreakMode="WordWrap"
+                Margin="0, 0, 0, 20">
+            <Button.Shadow>
+                <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+            </Button.Shadow>
+        </Button>
+
+        <Button Text="Назад"
+                Clicked="OnMainClicked"
+                IsEnabled="True"
+                BackgroundColor="White"
+                TextColor="Black"
+                WidthRequest="300"
+                LineBreakMode="WordWrap">
+            <Button.Shadow>
+                <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+            </Button.Shadow>
+        </Button>
+    </VerticalStackLayout>
+</ContentPage>
