@@ -10,7 +10,7 @@ public partial class FifthSurveyPage : ContentPage
 	public async void OnAnswerSelected(object sender, EventArgs e)
     {
         var button = (Button)sender;
-		Preferences.Set("Matter", button.Text);
+		Preferences.Set("ImproveMood", button.Text);
         await Shell.Current.GoToAsync("//" + nameof(SixthSurveyPage), true);
     }
 

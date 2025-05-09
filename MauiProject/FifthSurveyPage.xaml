@@ -13,71 +13,75 @@
                TextColor="Black"
                HorizontalOptions="Center"
                HorizontalTextAlignment="Center"/>
-            <Label Text="Что для вас важнее всего в месте для отдыха?"
+            <Label Text="Какие виды деятельности обычно помогают вам улучшить настроение?"
                 FontSize="25"
                 TextColor="Black"
                 Margin="0, 40, 0, 0"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"/>
-        </VerticalStackLayout>
 
-        <VerticalStackLayout VerticalOptions="Center" Margin="0, 80, 0, 0" HorizontalOptions="Center">
-            <Button Text="Красивый вид и атмосфера"
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                <Button Text="Прогулка в одиночестве или с близким человеком"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
+                LineBreakMode="WordWrap"                    
                 Margin="0, 20, 0, 0">
-                <Button.Shadow>
-                    <Shadow Opacity="0.25" 
+                    <Button.Shadow>
+                        <Shadow Opacity="0.25" 
                         Radius="4" 
                         Offset="0, 4"/>
-                </Button.Shadow>
-            </Button>
+                    </Button.Shadow>
+                </Button>
 
-            <Button Text="Тишина и уединение"
+                <Button Text="Посещение культурных мероприятий (музей, выставка, театр)"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
+                LineBreakMode="WordWrap"                   
                 Margin="0, 20, 0, 0">
-                <Button.Shadow>
-                    <Shadow Opacity="0.25" 
+                    <Button.Shadow>
+                        <Shadow Opacity="0.25" 
                         Radius="4" 
                         Offset="0, 4"/>
-                </Button.Shadow>
-            </Button>
+                    </Button.Shadow>
+                </Button>
 
-            <Button Text="Возможность активно провести время"
+                <Button Text="Общение с друзьями и близкими"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
+                LineBreakMode="WordWrap"                    
                 Margin="0, 20, 0, 0">
-                <Button.Shadow>
-                    <Shadow Opacity="0.25" 
+                    <Button.Shadow>
+                        <Shadow Opacity="0.25" 
                         Radius="4" 
                         Offset="0, 4"/>
-                </Button.Shadow>
-            </Button>
+                    </Button.Shadow>
+                </Button>
 
-            <Button Text="Удобное расположение и доступность"
+                <Button Text="Активные занятия спортом или физические упражнения"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
+                LineBreakMode="WordWrap"                    
                 Margin="0, 20, 0, 0">
-                <Button.Shadow>
-                    <Shadow Opacity="0.25" 
+                    <Button.Shadow>
+                        <Shadow Opacity="0.25" 
                         Radius="4" 
                         Offset="0, 4"/>
-                </Button.Shadow>
-            </Button>
-            
+                    </Button.Shadow>
+                </Button>
+
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </Grid>
 </ContentPage>

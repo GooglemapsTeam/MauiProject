@@ -10,7 +10,7 @@ public partial class ThirdSurveyPage : ContentPage
 	public async void OnAnswerSelected(object sender, EventArgs e)
     {
         var button = (Button)sender;
-		Preferences.Set("Wish", button.Text);
+		Preferences.Set("CurrentState", button.Text);
         await Shell.Current.GoToAsync("//" + nameof(FourthSurveyPage), true);
     }
 

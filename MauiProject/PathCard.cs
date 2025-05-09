@@ -10,6 +10,8 @@ namespace Emotional_Map
         public const int CardHeight = 170;
         public int Duration { get; private set; } = 666;
         private Place[] _places;
+        private bool _isFavorited = false;
+        private Border _favouriteButton;
 
         public PathCard(params Place[] place)
         {
@@ -19,13 +21,13 @@ namespace Emotional_Map
 
         private void InitializeCard()
         {
-
             BackgroundColor = Color.FromArgb("#FFFEFE");
             WidthRequest = CardWidth;
             HeightRequest = CardHeight;
             Padding = new Thickness(0);
             Stroke = Colors.Transparent;
             StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(20) };
+            HorizontalOptions = LayoutOptions.Center;
 
             var grid = new Grid();
             Content = grid;
@@ -82,7 +84,6 @@ namespace Emotional_Map
                 Command = new Command(() => OnInfoClicked(this, EventArgs.Empty))
             });
 
-
             var crossButton = CreateIconButton("cross_button.png", new Thickness(0, 0, 20, 15),
                 LayoutOptions.End, LayoutOptions.End);
             crossButton.GestureRecognizers.Add(new TapGestureRecognizer
@@ -90,20 +91,20 @@ namespace Emotional_Map
                 Command = new Command(() => OnCrossClicked(this, EventArgs.Empty))
             });
 
-            var favouriteButton = CreateIconButton("favourite_button.png", new Thickness(0, 0, 50, 15),
+            _favouriteButton = CreateIconButton(_isFavorited ? "favourite_button_active.png" : "favourite_button.png",
+                new Thickness(0, 0, 50, 15),
                 LayoutOptions.End, LayoutOptions.End);
-            favouriteButton.GestureRecognizers.Add(new TapGestureRecognizer
+            _favouriteButton.GestureRecognizers.Add(new TapGestureRecognizer
             {
                 Command = new Command(() => OnFavouriteClicked(this, EventArgs.Empty))
             });
-
 
             var placesContainer = new HorizontalStackLayout
             {
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
                 Spacing = 19,
-                Margin = new Thickness(26, 0, 0, 0) 
+                Margin = new Thickness(26, 0, 0, 0)
             };
 
             for (var x = 0; x < _places.Length; x++)
@@ -112,7 +113,7 @@ namespace Emotional_Map
                 {
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
-                    Spacing = 5 
+                    Spacing = 5
                 };
 
                 var icon = new Border
@@ -145,11 +146,10 @@ namespace Emotional_Map
             }
 
             grid.Children.Add(placesContainer);
-
             grid.Children.Add(actionButton);
             grid.Children.Add(infoButton);
             grid.Children.Add(crossButton);
-            grid.Children.Add(favouriteButton);
+            grid.Children.Add(_favouriteButton);
             grid.Children.Add(durationLabel);
         }
 
@@ -186,7 +186,7 @@ namespace Emotional_Map
             {
                 circlesContainer.Children.Add(new Image
                 {
-                    Source = i-1 == number ? "dark_circle.png" : "light_circle.png",
+                    Source = i - 1 == number ? "dark_circle.png" : "light_circle.png",
                     WidthRequest = 10,
                     HeightRequest = 10
                 });
@@ -239,11 +239,10 @@ namespace Emotional_Map
                         Children = { circlesContainer, imageBorder, titleLabel, descLabel },
                     }
                 }
-
             };
 
-            var leftSwipe = new SwipeGestureRecognizer { Direction = SwipeDirection.Left };
-            leftSwipe.Swiped += async (sender, e) =>
+            var rightSwipe = new SwipeGestureRecognizer { Direction = SwipeDirection.Left };
+            rightSwipe.Swiped += async (sender, e) =>
             {
                 if (number > 0)
                     await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number - 1], (sbyte)(number - 1)));
@@ -251,16 +250,16 @@ namespace Emotional_Map
                     await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
             };
 
-            var rightSwipe = new SwipeGestureRecognizer { Direction = SwipeDirection.Right };
-            rightSwipe.Swiped += async (sender, e) =>
+            var leftSwipe = new SwipeGestureRecognizer { Direction = SwipeDirection.Right };
+            leftSwipe.Swiped += async (sender, e) =>
             {
                 if (number < 3)
                     await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number + 1], (sbyte)(number + 1)));
                 else
                     await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
             };
-            page.Content.GestureRecognizers.Add(leftSwipe);
             page.Content.GestureRecognizers.Add(rightSwipe);
+            page.Content.GestureRecognizers.Add(leftSwipe);
 
             return page;
         }
@@ -277,7 +276,15 @@ namespace Emotional_Map
 
         private async void OnFavouriteClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
+            _isFavorited = !_isFavorited;
+
+            if (_favouriteButton.Content is Image img)
+            {
+                await img.ScaleTo(0.8, 100, Easing.SinInOut);
+                img.Source = _isFavorited ? "favourite_button_active.png" : "favourite_button.png";
+                await img.ScaleTo(1, 100, Easing.SinInOut);
+            }
+            // await SaveFavoriteStatus(_isFavorited);
         }
 
         private async void OnInfoClicked(object sender, EventArgs e)
@@ -289,6 +296,5 @@ namespace Emotional_Map
         {
             await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
         }
-
     }
 }

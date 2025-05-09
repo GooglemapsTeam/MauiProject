@@ -11,7 +11,7 @@
     <ShellContent
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage"/>
-    
+
     <ShellContent
         ContentTemplate="{DataTemplate local:FirstSurveyPage}"
         Route="FirstSurveyPage"/>
@@ -28,6 +28,7 @@
         ContentTemplate="{DataTemplate local:FourthSurveyPage}"
         Route="FourthSurveyPage"/>
 
+
     <ShellContent
         ContentTemplate="{DataTemplate local:FifthSurveyPage}"
         Route="FifthSurveyPage"/>
@@ -36,6 +37,9 @@
         ContentTemplate="{DataTemplate local:SixthSurveyPage}"
         Route="SixthSurveyPage"/>
 
+    <ShellContent
+        ContentTemplate="{DataTemplate local:SeventhSurveyPage}"
+        Route="SeventhSurveyPage"/>
     <ShellContent
         ContentTemplate="{DataTemplate local:MenuPage}"
         Route="MenuPage"/>

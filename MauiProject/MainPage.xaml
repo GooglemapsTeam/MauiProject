@@ -5,8 +5,84 @@
              Title="MainPage"
              BackgroundColor="#E6F9FF">
     <ScrollView>
-        <VerticalStackLayout Padding="0, 20, 0, 20" HorizontalOptions="Center" VerticalOptions="Center" x:Name="MainStack" Spacing="20">
+        <VerticalStackLayout>
+            <VerticalStackLayout Padding="0, 20, 0, 20" HorizontalOptions="Center" VerticalOptions="Center" x:Name="MainStack" Spacing="20">
+            
+        </VerticalStackLayout>
 
+
+                <Grid HorizontalOptions="Center" WidthRequest="350" Padding="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.25"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Column="0" Grid.Row="0" Text="Обновить маршруты" FontSize="12" TextColor="Black" HorizontalOptions="Start">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnUpdatePathesClicked"/>
+                    </Label.GestureRecognizers>
+                </Label>
+
+                <VerticalStackLayout Grid.Column="0" Grid.Row="1"
+
+                         HorizontalOptions="End"
+                         Margin="0,0,60,0">
+                    <Image WidthRequest="54"
+               HeightRequest="49"
+               Source="normal_smile.png"/>
+                    <Label Text="Изменить настроение"
+               FontSize="8"
+               TextColor="Black"
+               HorizontalTextAlignment="Center"
+               LineBreakMode="WordWrap"
+               WidthRequest="45"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnChangeMoodClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <HorizontalStackLayout Grid.Column="1" Grid.Row="1" HorizontalOptions="End" Margin="100, 0, 0, 0">
+                        <VerticalStackLayout
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+
+                        <Image WidthRequest="16"
+                   HeightRequest="24"
+                   Source="favourite.png"/>
+                        <Label Text="Избранное"
+                   FontSize="10"
+                   TextColor="Black"
+                   HorizontalTextAlignment="Center"/>
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnFavouriteClicked"/>
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                             HorizontalOptions="Center"
+                             Margin="10, 0, 0, 0">
+
+                        <Image WidthRequest="60"
+                   HeightRequest="60"
+                   Source="profile_button.png"/>
+                        <Label 
+                            Margin="0, 5, 0, 0"
+                            x:Name="HeaderLabel"
+                   FontSize="12"
+                   TextColor="Black"
+                   HorizontalTextAlignment="Center"/>
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnProfileClicked"/>
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
+                    
+                </HorizontalStackLayout>
+            </Grid>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

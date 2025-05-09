@@ -10,8 +10,8 @@ public partial class SixthSurveyPage : ContentPage
 	public async void OnAnswerSelected(object sender, EventArgs e)
     {
         var button = (Button)sender;
-		Preferences.Set("Time", button.Text);
-        await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
+		Preferences.Set("MostImpact", button.Text);
+        await Shell.Current.GoToAsync("//" + nameof(SeventhSurveyPage), true);
     }
 
 }
