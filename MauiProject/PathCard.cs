@@ -174,9 +174,59 @@ namespace Emotional_Map
             };
         }
 
-        private ContentPage CreateDescriptionWindow(Place place, sbyte number)
+        private Page CreateDescriptionWindow(Place place, sbyte number)
         {
-            return new ContentPage
+            var circlesContainer = new HorizontalStackLayout
+            {
+                HorizontalOptions = LayoutOptions.Center,
+                Spacing = 15
+            };
+
+            for (var i = 1; i <= 4; i++)
+            {
+                circlesContainer.Children.Add(new Image
+                {
+                    Source = i-1 == number ? "dark_circle.png" : "light_circle.png",
+                    WidthRequest = 10,
+                    HeightRequest = 10
+                });
+            }
+
+            var placeImage = new Image
+            {
+                Source = place.ImageSource,
+                Aspect = Aspect.AspectFill,
+                HorizontalOptions = LayoutOptions.Fill,
+                VerticalOptions = LayoutOptions.Fill
+            };
+
+            var imageBorder = new Border
+            {
+                Stroke = Colors.Transparent,
+                StrokeShape = new RoundRectangle { CornerRadius = 60 },
+                WidthRequest = 120,
+                HeightRequest = 120,
+                HorizontalOptions = LayoutOptions.Center,
+                Content = placeImage
+            };
+
+            var titleLabel = new Label
+            {
+                Text = place.Title,
+                FontSize = 15,
+                HorizontalOptions = LayoutOptions.Center,
+                TextColor = Colors.Black
+            };
+
+            var descLabel = new Label
+            {
+                Text = place.Description,
+                FontSize = 10,
+                HorizontalOptions = LayoutOptions.Center,
+                TextColor = Colors.Black
+            };
+
+            var page = new ContentPage
             {
                 BackgroundColor = Colors.White,
                 Content = new ScrollView
@@ -186,48 +236,33 @@ namespace Emotional_Map
                         Spacing = 20,
                         Padding = new Thickness(20),
                         WidthRequest = 300,
-                        Children =
-                {
-                    
-                    new Border
-                    {
-                        Stroke = Colors.Transparent,
-                                            StrokeShape = new RoundRectangle
-                        {
-                            CornerRadius = new CornerRadius(60, 60, 60, 60)
-                        },
-                        WidthRequest = 120,
-                        HeightRequest = 120,
-                        HorizontalOptions = LayoutOptions.Center,
-                        Content = new Image
-                        {
-                            Source = place.ImageSource,
-                            Aspect = Aspect.AspectFill,
-                            HorizontalOptions = LayoutOptions.Fill,
-                            VerticalOptions = LayoutOptions.Fill
-                        }
-                    },
-                    
-                    new Label
-                    {
-                        Text = place.Title,
-                        FontSize = 15,
-                        HorizontalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Black
-                    },
-                    
-                    new Label
-                    {
-                        Text = place.Description,
-                        FontSize = 10,
-                        HorizontalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Black
-                    },
-                    
-                }
+                        Children = { circlesContainer, imageBorder, titleLabel, descLabel },
                     }
                 }
+
             };
+
+            var leftSwipe = new SwipeGestureRecognizer { Direction = SwipeDirection.Left };
+            leftSwipe.Swiped += async (sender, e) =>
+            {
+                if (number > 0)
+                    await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number - 1], (sbyte)(number - 1)));
+                else
+                    await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
+            };
+
+            var rightSwipe = new SwipeGestureRecognizer { Direction = SwipeDirection.Right };
+            rightSwipe.Swiped += async (sender, e) =>
+            {
+                if (number < 3)
+                    await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number + 1], (sbyte)(number + 1)));
+                else
+                    await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
+            };
+            page.Content.GestureRecognizers.Add(leftSwipe);
+            page.Content.GestureRecognizers.Add(rightSwipe);
+
+            return page;
         }
 
         private async void OnToPathClicked(object sender, EventArgs e)
