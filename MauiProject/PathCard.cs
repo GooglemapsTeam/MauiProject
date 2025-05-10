@@ -12,12 +12,12 @@ namespace Emotional_Map
         private Place[] _places;
         private bool _isFavorited = false;
         private Border _favouriteButton;
+        private VerticalStackLayout _parent;
 
-
-        public PathCard(VerticalStackLayout papent, params Place[] place)
+        public PathCard(VerticalStackLayout parent, params Place[] place)
         {
             _places = place;
-
+            _parent = parent;
             InitializeCard();
         }
 
@@ -246,19 +246,27 @@ namespace Emotional_Map
             var rightSwipe = new SwipeGestureRecognizer { Direction = SwipeDirection.Left };
             rightSwipe.Swiped += async (sender, e) =>
             {
-                if (number > 0)
-                    await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number - 1], (sbyte)(number - 1)));
+                if (number < 3)
+                    await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number + 1], (sbyte)(number + 1)));
                 else
+                {
+                    foreach (var page in Navigation.ModalStack)
+                        Navigation.RemovePage(page);
                     await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
+                }
             };
 
             var leftSwipe = new SwipeGestureRecognizer { Direction = SwipeDirection.Right };
             leftSwipe.Swiped += async (sender, e) =>
             {
-                if (number < 3)
-                    await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number + 1], (sbyte)(number + 1)));
+                if (number > 0)
+                    await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number - 1], (sbyte)(number - 1)));
                 else
+                {
+                    foreach (var page in Navigation.ModalStack)
+                        Navigation.RemovePage(page);
                     await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
+                }
             };
             page.Content.GestureRecognizers.Add(rightSwipe);
             page.Content.GestureRecognizers.Add(leftSwipe);
@@ -273,8 +281,7 @@ namespace Emotional_Map
 
         private async void OnCrossClicked(object sender, EventArgs e)
         {
-            //var number = _parent.Children.L
-            //_parent.Children.RemoveAt();
+            _parent.Children.Remove(this);
         }
 
         private async void OnFavouriteClicked(object sender, EventArgs e)
@@ -297,7 +304,7 @@ namespace Emotional_Map
 
         private async void OnUpdateClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
+            await Shell.Current.GoToAsync("//" + nameof(FavouritePage), true);
         }
 
     }

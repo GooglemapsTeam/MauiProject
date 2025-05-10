@@ -8,11 +8,15 @@ public partial class MainPage : ContentPage
         CreatePathCards();
         HeaderLabel.Text = Preferences.Get("Name", "Пользователь");
     }
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        HeaderLabel.Text = Preferences.Get("Name", "Пользователь");
+    }
 
     private async void OnProfileClicked(object sender, EventArgs e)
     {
-        Navigation.RemovePage(this);
-        await Navigation.PushAsync(new ProfilePage());
+        await Shell.Current.GoToAsync("//" + nameof(ProfilePage), true);
     }
 
     private async void OnFavouriteClicked(object sender, EventArgs e)

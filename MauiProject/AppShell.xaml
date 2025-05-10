@@ -7,11 +7,12 @@
     Shell.FlyoutBehavior="Flyout"
     Title="Emotional_Map"
     NavBarIsVisible="False">
-    
+
+
     <ShellContent
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage"/>
-
+    
     <ShellContent
         ContentTemplate="{DataTemplate local:FirstSurveyPage}"
         Route="FirstSurveyPage"/>
@@ -40,13 +41,17 @@
     <ShellContent
         ContentTemplate="{DataTemplate local:SeventhSurveyPage}"
         Route="SeventhSurveyPage"/>
-    
-    <ShellContent
-        ContentTemplate="{DataTemplate local:MenuPage}"
-        Route="MenuPage"/>
 
     <ShellContent
         ContentTemplate="{DataTemplate local:ProfilePage}"
         Route="ProfilePage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:FavouritePage}"
+        Route="FavouritePage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:MenuPage}"
+        Route="MenuPage"/>
 
 </Shell>
