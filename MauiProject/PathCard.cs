@@ -247,12 +247,12 @@ namespace Emotional_Map
             rightSwipe.Swiped += async (sender, e) =>
             {
                 if (number < 3)
-                    await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number + 1], (sbyte)(number + 1)));
+                {
+                    await Navigation.PushAsync(CreateDescriptionWindow(_places[number + 1], (sbyte)(number + 1)), false);
+                }
                 else
                 {
-                    foreach (var page in Navigation.ModalStack)
-                        Navigation.RemovePage(page);
-                    await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
+                    await Shell.Current.GoToAsync("//" + nameof(MainPage), false);
                 }
             };
 
@@ -260,12 +260,10 @@ namespace Emotional_Map
             leftSwipe.Swiped += async (sender, e) =>
             {
                 if (number > 0)
-                    await Navigation.PushModalAsync(CreateDescriptionWindow(_places[number - 1], (sbyte)(number - 1)));
+                    await Navigation.PushAsync(CreateDescriptionWindow(_places[number - 1], (sbyte)(number - 1)), false);
                 else
                 {
-                    foreach (var page in Navigation.ModalStack)
-                        Navigation.RemovePage(page);
-                    await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
+                    await Shell.Current.GoToAsync("//" + nameof(MainPage), false);
                 }
             };
             page.Content.GestureRecognizers.Add(rightSwipe);
@@ -276,12 +274,13 @@ namespace Emotional_Map
 
         private async void OnToPathClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
+           throw new NotImplementedException();
         }
 
-        private async void OnCrossClicked(object sender, EventArgs e)
+        private void OnCrossClicked(object sender, EventArgs e)
         {
             _parent.Children.Remove(this);
+            //Добавить добавление новой карточки
         }
 
         private async void OnFavouriteClicked(object sender, EventArgs e)
@@ -294,7 +293,7 @@ namespace Emotional_Map
                 img.Source = _isFavorited ? "favourite_button_active.png" : "favourite_button.png";
                 await img.ScaleTo(1, 100, Easing.SinInOut);
             }
-            // await SaveFavoriteStatus(_isFavorited);
+            // Добавление в избранное не работает
         }
 
         private async void OnInfoClicked(object sender, EventArgs e)

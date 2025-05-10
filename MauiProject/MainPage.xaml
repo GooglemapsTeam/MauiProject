@@ -30,7 +30,7 @@
 
                 <VerticalStackLayout Grid.Column="0" Grid.Row="1"
                          HorizontalOptions="End"
-                         Margin="0,0,60,0">
+                         Margin="0,10,60,0">
                     <Image WidthRequest="54"
                HeightRequest="49"
                Source="normal_smile.png"/>

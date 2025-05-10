@@ -10,6 +10,7 @@ public partial class ProfilePage : ContentPage
 
     public async void OnSurveyClicked(object sender, EventArgs e)
     {
+        NameEntry.Unfocus();
         await Shell.Current.GoToAsync("//" + nameof(ThirdSurveyPage), true);
     }
 
@@ -24,15 +25,18 @@ public partial class ProfilePage : ContentPage
         NameLabel.Text = NameEntry.Text.Trim();
         Preferences.Set("Name", NameLabel.Text);
         EditNameContainer.IsVisible = false;
+        NameEntry.Unfocus();
     }
 
     private async void OnMainClicked(object sender, EventArgs e)
     {
+        NameEntry.Unfocus();
         Navigation.RemovePage(this);
         await Navigation.PushAsync(new MainPage());
     }
     private async void OnConnectionClicked(object sender, EventArgs e)
     {
+        NameEntry.Unfocus();
         throw new NotImplementedException();
     }
 }

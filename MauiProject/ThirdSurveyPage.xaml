@@ -8,7 +8,7 @@
         <Image Source="stain.png" 
            Aspect="AspectFit"/>
 
-        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+        <VerticalStackLayout VerticalOptions="Start" HorizontalOptions="Center">
 
             <VerticalStackLayout VerticalOptions="Start" WidthRequest="300">
                 <Label Text="Пройдите короткий тест и получите персонализированный маршрут для улучшения настроения"

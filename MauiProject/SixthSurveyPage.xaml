@@ -7,7 +7,8 @@
     <Grid Padding="0, 20, 0, 20">
         <Image Source="stain.png" 
            Aspect="AspectFit"/>
-        <VerticalStackLayout VerticalOptions="Start" WidthRequest="300">
+
+        <VerticalStackLayout VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="300">
             <Label Text="Давайте поможем вам найти идеальное место для хорошего настроения"
                FontSize="20"
                TextColor="Black"
