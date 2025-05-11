@@ -8,8 +8,8 @@
         <Image Source="stain.png" 
            Aspect="AspectFit"/>
         <VerticalStackLayout VerticalOptions="Start" WidthRequest="300">
-            <Label Text="Пройдите короткий тест и получите персонализированный маршрут для улучшения настроения"
-               FontSize="15"
+            <Label Text="Давайте поможем вам найти идеальное место для хорошего настроения"
+               FontSize="20"
                TextColor="Black"
                HorizontalOptions="Center"
                HorizontalTextAlignment="Center"/>

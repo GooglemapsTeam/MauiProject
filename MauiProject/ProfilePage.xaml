@@ -6,8 +6,8 @@
              BackgroundColor="#E6F9FF">
     <VerticalStackLayout HorizontalOptions="Center">
         <Image Source="profile_button.png" 
-               WidthRequest="60"
-               HeightRequest="60"
+               WidthRequest="120"
+               HeightRequest="120"
                Margin="0, 75, 0, 10"/>
 
         <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">

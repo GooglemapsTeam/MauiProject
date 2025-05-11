@@ -47,10 +47,10 @@ namespace Emotional_Map
             {
                 WidthRequest = 75,
                 HeightRequest = 20,
-                Stroke = Colors.Black,
+                Stroke = Colors.Transparent,
                 BackgroundColor = Colors.White,
                 Padding = new Thickness(0),
-                Margin = new Thickness(0, 15, 14, 0),
+                Margin = new Thickness(0, 5, 14, 0),
                 HorizontalOptions = LayoutOptions.End,
                 VerticalOptions = LayoutOptions.Start,
                 StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(5) },
@@ -70,7 +70,7 @@ namespace Emotional_Map
                 TextColor = Color.FromArgb("#757575"),
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Start,
-                Margin = new Thickness(15, 15, 0, 0),
+                Margin = new Thickness(15, 5, 0, 0),
             };
             actionButton.Content = actionLabel;
 
@@ -79,14 +79,14 @@ namespace Emotional_Map
                 Command = new Command(() => OnToPathClicked(this, EventArgs.Empty))
             });
 
-            var infoButton = CreateIconButton("info_button.png", new Thickness(0, 14, 100, 0),
+            var infoButton = CreateIconButton("info_button.png", new Thickness(0, 4, 100, 0),
                 LayoutOptions.End, LayoutOptions.Start);
             infoButton.GestureRecognizers.Add(new TapGestureRecognizer
             {
                 Command = new Command(() => OnInfoClicked(this, EventArgs.Empty))
             });
 
-            var crossButton = CreateIconButton("cross_button.png", new Thickness(0, 0, 20, 15),
+            var crossButton = CreateIconButton("cross_button.png", new Thickness(0, 0, 20, 5),
                 LayoutOptions.End, LayoutOptions.End);
             crossButton.GestureRecognizers.Add(new TapGestureRecognizer
             {
@@ -94,7 +94,7 @@ namespace Emotional_Map
             });
 
             _favouriteButton = CreateIconButton(_isFavorited ? "favourite_button_active.png" : "favourite_button.png",
-                new Thickness(0, 0, 50, 15),
+                new Thickness(0, 0, 50, 5),
                 LayoutOptions.End, LayoutOptions.End);
             _favouriteButton.GestureRecognizers.Add(new TapGestureRecognizer
             {
@@ -113,8 +113,7 @@ namespace Emotional_Map
             {
                 var placeItem = new VerticalStackLayout
                 {
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(0, 15, 0, 0),
                     Spacing = 5
                 };
 
@@ -137,8 +136,11 @@ namespace Emotional_Map
                 var label = new Label()
                 {
                     Text = _places[x].Title,
+                    WidthRequest = 60,
+                    LineBreakMode = LineBreakMode.WordWrap,
                     FontSize = 10,
                     HorizontalTextAlignment = TextAlignment.Center,
+                    MaxLines = 3,
                     TextColor = Colors.Black,
                 };
 
@@ -216,6 +218,9 @@ namespace Emotional_Map
             {
                 Text = place.Title,
                 FontSize = 15,
+                WidthRequest = 300,
+                HorizontalTextAlignment = TextAlignment.Center,
+                LineBreakMode=LineBreakMode.WordWrap,
                 HorizontalOptions = LayoutOptions.Center,
                 TextColor = Colors.Black
             };
@@ -298,7 +303,7 @@ namespace Emotional_Map
 
         private async void OnInfoClicked(object sender, EventArgs e)
         {
-            await Navigation.PushModalAsync(CreateDescriptionWindow(_places[0], 0));
+            await Navigation.PushAsync(CreateDescriptionWindow(_places[0], 0), false);
         }
 
         private async void OnUpdateClicked(object sender, EventArgs e)

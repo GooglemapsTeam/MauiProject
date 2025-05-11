@@ -5,6 +5,12 @@
              Title="FavouritePage"
              BackgroundColor="#E6F9FF">
     <VerticalStackLayout>
-
+        <Label Text="Избранные маршруты"
+               FontSize="24"
+               TextColor="Black"
+               HorizontalOptions="Center"
+               HorizontalTextAlignment="Center"
+               VerticalOptions="Start"
+               Margin="0, 25, 0, 0"/>
     </VerticalStackLayout>
 </ContentPage>
