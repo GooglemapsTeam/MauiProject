@@ -18,7 +18,16 @@ namespace Emotional_Map
         {
             _places = place;
             _parent = parent;
-            InitializeCard();
+            // InitializeComponent(); // Удалите эту строку
+            InitializeCard(); // Ваш метод инициализации
+        }
+
+        private void OnCrossClicked(object sender, EventArgs e)
+        {
+            if (_parent != null && _parent.Children.Contains(this))
+            {
+                _parent.Children.Remove(this);
+            }
         }
 
         private void InitializeCard()
@@ -279,13 +288,20 @@ namespace Emotional_Map
 
         private async void OnToPathClicked(object sender, EventArgs e)
         {
-           throw new NotImplementedException();
+            try
+            {
+                // Просто переход на страницу карты без параметров
+                await Shell.Current.GoToAsync("//YandexMapPage");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Ошибка", $"Не удалось открыть карту: {ex.Message}", "OK");
+            }
         }
 
-        private void OnCrossClicked(object sender, EventArgs e)
+        private async Task DisplayAlert(string v1, string v2, string v3)
         {
-            _parent.Children.Remove(this);
-            //Добавить добавление новой карточки
+            throw new NotImplementedException();
         }
 
         private async void OnFavouriteClicked(object sender, EventArgs e)
