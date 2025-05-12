@@ -1,6 +1,9 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using System.Globalization;
+using System.Diagnostics;
+using Emotional_Map.Services;
 
 namespace Emotional_Map
 {
@@ -13,12 +16,21 @@ namespace Emotional_Map
         private bool _isFavorited = false;
         private Border _favouriteButton;
         private VerticalStackLayout _parent;
+        private bool _isNavigating = false; // Флаг для предотвращения множественных нажатий
 
         public PathCard(VerticalStackLayout parent, params Place[] place)
         {
             _places = place;
             _parent = parent;
             InitializeCard();
+        }
+
+        private void OnCrossClicked(object sender, EventArgs e)
+        {
+            if (_parent != null && _parent.Children.Contains(this))
+            {
+                _parent.Children.Remove(this);
+            }
         }
 
         private void InitializeCard()
@@ -220,7 +232,7 @@ namespace Emotional_Map
                 FontSize = 15,
                 WidthRequest = 300,
                 HorizontalTextAlignment = TextAlignment.Center,
-                LineBreakMode=LineBreakMode.WordWrap,
+                LineBreakMode = LineBreakMode.WordWrap,
                 HorizontalOptions = LayoutOptions.Center,
                 TextColor = Colors.Black
             };
@@ -279,15 +291,132 @@ namespace Emotional_Map
 
         private async void OnToPathClicked(object sender, EventArgs e)
         {
-           throw new NotImplementedException();
-        }
+            if (_isNavigating)
+                return;
 
-        private void OnCrossClicked(object sender, EventArgs e)
-        {
-            _parent.Children.Remove(this);
-            //Добавить добавление новой карточки
-        }
+            _isNavigating = true;
 
+            try
+            {
+                if (_places == null || _places.Length < 1)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Ошибка", "Для построения маршрута нужна минимум 1 точка", "OK");
+                    return;
+                }
+
+                // Показываем индикатор загрузки
+                var loadingIndicator = new ActivityIndicator
+                {
+                    IsRunning = true,
+                    Color = Colors.Blue,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center
+                };
+
+                var loadingLabel = new Label
+                {
+                    Text = "Получение местоположения...",
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                var loadingLayout = new VerticalStackLayout
+                {
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children = { loadingIndicator, loadingLabel }
+                };
+
+                var loadingPage = new ContentPage
+                {
+                    Content = loadingLayout,
+                    BackgroundColor = Colors.White
+                };
+
+                await Application.Current.MainPage.Navigation.PushModalAsync(loadingPage);
+
+                // Получаем текущее местоположение
+                var location = await LocationService.Instance.GetCurrentLocationAsync();
+
+                // Объявляем переменные для координат и названий мест один раз
+                List<string> coordinatesList;
+                List<string> placeNamesList;
+                string coordinates;
+                string placeNames;
+                string encodedCoords;
+                string encodedNames;
+
+                if (location == null)
+                {
+                    await Application.Current.MainPage.Navigation.PopModalAsync();
+                    await Application.Current.MainPage.DisplayAlert("Ошибка",
+                        "Не удалось получить местоположение. Маршрут будет построен только между выбранными точками.", "OK");
+
+                    // Строим маршрут только между выбранными точками
+                    coordinates = string.Join("|", _places.Select(p =>
+                        $"{p.Latitude.ToString(CultureInfo.InvariantCulture)},{p.Longitude.ToString(CultureInfo.InvariantCulture)}"));
+
+                    placeNames = string.Join("|", _places.Select(p => p.Title));
+                }
+                else
+                {
+                    // Обновляем текст загрузки
+                    loadingLabel.Text = "Построение маршрута...";
+
+                    // Создаем список координат, начиная с текущего местоположения
+                    coordinatesList = new List<string>
+            {
+                $"{location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)}"
+            };
+
+                    // Добавляем координаты выбранных мест
+                    coordinatesList.AddRange(_places.Select(p =>
+                        $"{p.Latitude.ToString(CultureInfo.InvariantCulture)},{p.Longitude.ToString(CultureInfo.InvariantCulture)}"));
+
+                    // Объединяем координаты в строку
+                    coordinates = string.Join("|", coordinatesList);
+
+                    // Создаем список названий мест, начиная с "Моё местоположение"
+                    placeNamesList = new List<string> { "Моё местоположение" };
+                    placeNamesList.AddRange(_places.Select(p => p.Title));
+                    placeNames = string.Join("|", placeNamesList);
+                }
+
+                // Кодируем параметры
+                encodedCoords = Uri.EscapeDataString(coordinates);
+                encodedNames = Uri.EscapeDataString(placeNames);
+
+                Debug.WriteLine($"Координаты: {coordinates}");
+                Debug.WriteLine($"Названия: {placeNames}");
+                Debug.WriteLine($"URL: //YandexMapPage?coords={encodedCoords}&names={encodedNames}");
+
+                // Закрываем индикатор загрузки
+                await Application.Current.MainPage.Navigation.PopModalAsync();
+
+                // Переходим на страницу карты
+                await Shell.Current.GoToAsync($"//YandexMapPage?coords={encodedCoords}&names={encodedNames}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при построении маршрута: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // В случае ошибки показываем сообщение
+                await Application.Current.MainPage.DisplayAlert("Ошибка",
+                    $"Произошла ошибка при построении маршрута: {ex.Message}", "OK");
+
+                // Закрываем индикатор загрузки, если он открыт
+                if (Application.Current.MainPage.Navigation.ModalStack.Count > 0)
+                {
+                    await Application.Current.MainPage.Navigation.PopModalAsync();
+                }
+            }
+            finally
+            {
+                _isNavigating = false;
+            }
+        }
         private async void OnFavouriteClicked(object sender, EventArgs e)
         {
             _isFavorited = !_isFavorited;
@@ -310,6 +439,5 @@ namespace Emotional_Map
         {
             await Shell.Current.GoToAsync("//" + nameof(FavouritePage), true);
         }
-
     }
 }

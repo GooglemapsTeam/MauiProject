@@ -52,6 +52,8 @@
     <ShellContent
         ContentTemplate="{DataTemplate local:MenuPage}"
         Route="MenuPage"/>
-
-
+    <ShellContent
+        ContentTemplate="{DataTemplate local:YandexMapPage}"
+        Route="YandexMapPage"/>
+    
 </Shell>
