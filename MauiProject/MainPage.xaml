@@ -1,24 +1,90 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MenuFormExample.MainPage"
-             Title="Main Page">
-
-    <Grid>
-        <VerticalStackLayout
-            VerticalOptions="Center"
-            HorizontalOptions="Center">
-
-            <Button
-                Text="Open Menu"
-                Clicked="OnOpenMenuButtonClicked" />
-
-            <Label
-                x:Name="ResultLabel"
-                Text=""
-                HorizontalOptions="Center"
-                Margin="0,20,0,0"/>
+             x:Class="Emotional_Map.MainPage"
+             Title="MainPage"
+             BackgroundColor="#E6F9FF">
+    <ScrollView>
+        <VerticalStackLayout>
+            <VerticalStackLayout Padding="0, 20, 0, 0" HorizontalOptions="Center" VerticalOptions="Center" x:Name="MainStack" Spacing="10">
+            
         </VerticalStackLayout>
-    </Grid>
+            <Grid HorizontalOptions="Center" WidthRequest="350" Padding="0" VerticalOptions="End">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
+                <Label Grid.Column="0" Grid.Row="0" Text="Обновить маршруты" FontSize="12" TextColor="Black" HorizontalOptions="Start">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnUpdatePathesClicked"/>
+                    </Label.GestureRecognizers>
+                </Label>
+
+                <VerticalStackLayout Grid.Column="0" Grid.Row="1"
+                         HorizontalOptions="End"
+                         Margin="0,10,60,0">
+                    <Label WidthRequest="54"
+               HeightRequest="49"
+               Text="😟"
+               FontSize="40"/>
+                    <Label Text="Изменить настроение"
+               FontSize="8"
+               TextColor="Black"
+               HorizontalTextAlignment="Center"
+               LineBreakMode="WordWrap"
+               WidthRequest="45"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnChangeMoodClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <HorizontalStackLayout Grid.Column="1" Grid.Row="1" HorizontalOptions="End" Margin="100, 0, 0, 0" HeightRequest="100">
+                        <VerticalStackLayout
+                            Margin="0, 0, 0, 0"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+
+                        <Image WidthRequest="16"
+                   HeightRequest="24"
+                   Source="favourite.png"/>
+                        <Label Text="Избранное"
+                   FontSize="10"
+                   TextColor="Black"
+                   HorizontalTextAlignment="Center"/>
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnFavouriteClicked"/>
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                             HorizontalOptions="Center"
+                             Margin="10, 0, 0, 0">
+
+                        <Image WidthRequest="60"
+                   HeightRequest="60"
+                   Source="profile_button.png"/>
+                        <Label 
+                            Margin="0, 5, 0, 0"
+                            x:Name="HeaderLabel"
+                   FontSize="10"
+                   TextColor="Black"
+                   HorizontalTextAlignment="Center"
+                   WidthRequest="70"
+                   LineBreakMode="WordWrap"
+                   MaxLines="2"/>
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnProfileClicked"/>
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
+                    
+                </HorizontalStackLayout>
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

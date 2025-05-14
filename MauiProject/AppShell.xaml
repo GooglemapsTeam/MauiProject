@@ -1,15 +1,57 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
-    x:Class="MauiProject.AppShell"
+    x:Class="Emotional_Map.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MauiProject"
-    Shell.FlyoutBehavior="Flyout"
-    Title="MauiProject">
+    xmlns:local="clr-namespace:Emotional_Map"
+    Title="Emotional_Map"
+    NavBarIsVisible="False"
+    FlyoutBehavior="Disabled">
+
 
     <ShellContent
-        Title="Home"
+        ContentTemplate="{DataTemplate local:FirstSurveyPage}"
+        Route="FirstSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:SecondSurveyPage}"
+        Route="SecondSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:ThirdSurveyPage}"
+        Route="ThirdSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:FourthSurveyPage}"
+        Route="FourthSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:FifthSurveyPage}"
+        Route="FifthSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:SixthSurveyPage}"
+        Route="SixthSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:SeventhSurveyPage}"
+        Route="SeventhSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:ProfilePage}"
+        Route="ProfilePage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:FavouritePage}"
+        Route="FavouritePage"/>
+
+    <ShellContent
         ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Route="MainPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:MenuPage}"
+        Route="MenuPage"/>
+
 
 </Shell>
