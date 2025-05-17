@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Plugin.Maui.Audio;
 
 namespace Emotional_Map
 {
+
     public static class MauiProgram
     {
         public static MauiApp CreateMauiApp()
@@ -13,7 +15,8 @@ namespace Emotional_Map
                 {
                     fonts.AddFont("Montserrat-Medium.ttf", "MontserratMedium");
                 });
-
+            builder.Services.AddSingleton(AudioManager.Current);
+            builder.Services.AddTransient<MainPage>();
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif

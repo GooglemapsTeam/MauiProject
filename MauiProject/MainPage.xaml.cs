@@ -1,14 +1,16 @@
+using Plugin.Maui.Audio;
+
 namespace Emotional_Map;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage()
+	public MainPage(IAudioManager audioManager)
 	{
         InitializeComponent();
         CreatePathCards();
         HeaderLabel.Text = Preferences.Get("Name", "Пользователь");
     }
-    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    protected async override void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
         HeaderLabel.Text = Preferences.Get("Name", "Пользователь");
@@ -16,21 +18,25 @@ public partial class MainPage : ContentPage
 
     private async void OnProfileClicked(object sender, EventArgs e)
     {
+        AudioPlayer.PlaySound(AudioPlayer.ProfileButtonClickSound);
         await Shell.Current.GoToAsync("//" + nameof(ProfilePage), true);
     }
 
     private async void OnFavouriteClicked(object sender, EventArgs e)
     {
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
     }
 
     private async void OnChangeMoodClicked(object sender, EventArgs e)
     {
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
     }
 
     private async void OnUpdatePathesClicked(object sender, EventArgs e)
     {
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
     }
 

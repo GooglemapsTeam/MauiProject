@@ -8,7 +8,6 @@
     NavBarIsVisible="False"
     FlyoutBehavior="Disabled">
 
-
     <ShellContent
         ContentTemplate="{DataTemplate local:FirstSurveyPage}"
         Route="FirstSurveyPage"/>
@@ -48,10 +47,5 @@
     <ShellContent
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage"/>
-
-    <ShellContent
-        ContentTemplate="{DataTemplate local:MenuPage}"
-        Route="MenuPage"/>
-
 
 </Shell>

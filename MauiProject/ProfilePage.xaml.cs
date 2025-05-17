@@ -1,3 +1,5 @@
+using Plugin.Maui.Audio;
+
 namespace Emotional_Map;
 
 public partial class ProfilePage : ContentPage
@@ -32,7 +34,7 @@ public partial class ProfilePage : ContentPage
     {
         NameEntry.Unfocus();
         Navigation.RemovePage(this);
-        await Navigation.PushAsync(new MainPage());
+        await Navigation.PushAsync(new MainPage(AudioManager.Current));
     }
     private async void OnConnectionClicked(object sender, EventArgs e)
     {

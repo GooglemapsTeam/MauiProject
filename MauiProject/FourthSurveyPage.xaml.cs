@@ -10,7 +10,8 @@ public partial class FourthSurveyPage : ContentPage
 	public async void OnAnswerSelected(object sender, EventArgs e)
     {
         var button = (Button)sender;
-		Preferences.Set("Matter", button.Text);
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+        Preferences.Set("Matter", button.Text);
         await Shell.Current.GoToAsync("//" + nameof(FifthSurveyPage), true);
     }
 

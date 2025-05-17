@@ -10,6 +10,7 @@ public partial class FirstSurveyPage : ContentPage
     private async void OnNextClicked(object sender, EventArgs e)
     {
         Preferences.Set("Name", NameEntry.Text);
+        AudioPlayer.PlaySound(AudioPlayer.StartButtonClickSound);
         await Shell.Current.GoToAsync("//"+nameof(SecondSurveyPage), true);
     }
 

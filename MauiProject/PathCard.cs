@@ -8,7 +8,7 @@ namespace Emotional_Map
     {
         public const int CardWidth = 350;
         public const int CardHeight = 170;
-        public int Duration { get; private set; } = 666;
+        public int Duration { get; private set; } = 228;
         private Place[] _places;
         private bool _isFavorited = false;
         private Border _favouriteButton;
@@ -136,8 +136,8 @@ namespace Emotional_Map
                 var label = new Label()
                 {
                     Text = _places[x].Title,
-                    WidthRequest = 60,
-                    LineBreakMode = LineBreakMode.WordWrap,
+                    MaximumWidthRequest = 60,
+                    LineBreakMode = LineBreakMode.CharacterWrap,
                     FontSize = 10,
                     HorizontalTextAlignment = TextAlignment.Center,
                     MaxLines = 3,
@@ -217,8 +217,9 @@ namespace Emotional_Map
             var titleLabel = new Label
             {
                 Text = place.Title,
-                FontSize = 15,
-                WidthRequest = 300,
+                FontSize = 20,
+                FontAttributes = FontAttributes.Bold,
+                MaximumWidthRequest = 450,
                 HorizontalTextAlignment = TextAlignment.Center,
                 LineBreakMode=LineBreakMode.WordWrap,
                 HorizontalOptions = LayoutOptions.Center,
@@ -228,8 +229,10 @@ namespace Emotional_Map
             var descLabel = new Label
             {
                 Text = place.Description,
-                FontSize = 10,
+                FontSize = 15,
                 HorizontalOptions = LayoutOptions.Center,
+                MaximumWidthRequest=450,
+                LineBreakMode = LineBreakMode.WordWrap,
                 TextColor = Colors.Black
             };
 
@@ -284,6 +287,7 @@ namespace Emotional_Map
 
         private void OnCrossClicked(object sender, EventArgs e)
         {
+            AudioPlayer.PlaySound(AudioPlayer.CrossButtonClickSound);
             _parent.Children.Remove(this);
             //Добавить добавление новой карточки
         }
@@ -291,7 +295,7 @@ namespace Emotional_Map
         private async void OnFavouriteClicked(object sender, EventArgs e)
         {
             _isFavorited = !_isFavorited;
-
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
             if (_favouriteButton.Content is Image img)
             {
                 await img.ScaleTo(0.8, 100, Easing.SinInOut);
@@ -303,11 +307,13 @@ namespace Emotional_Map
 
         private async void OnInfoClicked(object sender, EventArgs e)
         {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
             await Navigation.PushAsync(CreateDescriptionWindow(_places[0], 0), false);
         }
 
         private async void OnUpdateClicked(object sender, EventArgs e)
         {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
             await Shell.Current.GoToAsync("//" + nameof(FavouritePage), true);
         }
 
