@@ -4,29 +4,86 @@
              x:Class="Emotional_Map.YandexMapPage"
              Title="Маршрут">
     <Grid>
-        <WebView x:Name="MapWebView"
-                 HorizontalOptions="FillAndExpand"
-                 VerticalOptions="FillAndExpand"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.7*" />
+            <RowDefinition Height="0.3*" />
+        </Grid.RowDefinitions>
 
-        <!-- Индикатор загрузки -->
-        <ActivityIndicator x:Name="LoadingIndicator"
-                           IsRunning="True"
-                           IsVisible="True"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center"
-                           Color="Blue"/>
+        <!-- Верхняя часть с картой (70% экрана) -->
+        <Grid Grid.Row="0">
+            <WebView x:Name="MapWebView"
+                     HorizontalOptions="FillAndExpand"
+                     VerticalOptions="FillAndExpand"/>
 
-        <!-- Кнопка для отладки -->
-        <Button x:Name="DebugButton"
-                Text="Отладка"
-                IsVisible="False"
-                HorizontalOptions="End"
-                VerticalOptions="Start"
-                Margin="0,10,10,0"
-                BackgroundColor="#80FFFFFF"
-                TextColor="Black"
-                FontSize="12"
-                CornerRadius="5"
-                Padding="5"/>
+            <!-- Индикатор загрузки -->
+            <ActivityIndicator x:Name="LoadingIndicator"
+                               IsRunning="True"
+                               IsVisible="True"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               Color="Blue"/>
+
+            <!-- Кнопка для отладки -->
+            <Button x:Name="DebugButton"
+                    Text="Отладка"
+                    IsVisible="False"
+                    HorizontalOptions="End"
+                    VerticalOptions="Start"
+                    Margin="0,10,10,0"
+                    BackgroundColor="#80FFFFFF"
+                    TextColor="Black"
+                    FontSize="12"
+                    CornerRadius="5"
+                    Padding="5"/>
+        </Grid>
+
+        <!-- Нижняя часть с интерфейсом (30% экрана) -->
+        <Grid Grid.Row="1" Padding="10" BackgroundColor="White">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Кнопка построения маршрута -->
+            <Button x:Name="BuildRouteButton"
+                    Text="Построить маршрут"
+                    Grid.Row="0"
+                    BackgroundColor="#4285F4"
+                    TextColor="White"
+                    CornerRadius="10"
+                    Margin="5"
+                    HeightRequest="50"
+                    FontAttributes="Bold"
+                    FontSize="16"/>
+
+            <!-- Информация о расстоянии маршрута -->
+            <Label x:Name="RouteDistanceLabel"
+                   Text="Расстояние: не определено"
+                   Grid.Row="1"
+                   TextColor="Black"
+                   FontSize="14"
+                   Margin="5,5,5,0"
+                   IsVisible="False"/>
+
+            <!-- Информация о времени в пути -->
+            <Label x:Name="RouteDurationLabel"
+                   Text="Время в пути: не определено"
+                   Grid.Row="2"
+                   TextColor="Black"
+                   FontSize="14"
+                   Margin="5,0,5,5"
+                   IsVisible="False"/>
+
+            <!-- Общая информация о маршруте -->
+            <Label x:Name="RouteInfoLabel"
+                   Text="Информация о маршруте будет отображаться здесь"
+                   Grid.Row="3"
+                   TextColor="Gray"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+        </Grid>
     </Grid>
 </ContentPage>
