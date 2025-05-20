@@ -8,24 +8,41 @@ public partial class YandexMapPage : ContentPage
 {
     private string _apiKey = "69f697cc-32fb-4058-8056-a615983e7e93"; // Замените на ваш API-ключ Яндекс Карт
     private bool _isLocationPermissionGranted = false;
+    private Random _random = new Random();
 
-    // Предопределенные точки маршрута (координаты достопримечательностей Екатеринбурга)
-    private readonly string[] _predefinedPoints = new string[]
+    // Расширенный список предопределенных точек (10 достопримечательностей Екатеринбурга)
+    private readonly string[] _allPoints = new string[]
     {
         "56.844106, 60.645473", // Ельцин центр
         "56.837527, 60.604722", // Плотинка Екатеринбург
         "56.826389, 60.631111", // Дендропарк
-        "56.821667, 60.621944"  // Зеленая роща
+        "56.821667, 60.621944", // Зеленая роща
+        "56.838660, 60.605514", // Театр оперы и балета
+        "56.844431, 60.617524", // Храм на Крови
+        "56.846815, 60.610605", // Ганина Яма
+        "56.824687, 60.595051", // Дом Севастьянова
+        "56.840863, 60.650324", // ЦПКиО им. Маяковского
+        "56.830904, 60.602989"  // Музей истории Екатеринбурга
     };
 
-    // Названия точек маршрута
-    private readonly string[] _predefinedNames = new string[]
+    // Названия всех точек маршрута
+    private readonly string[] _allNames = new string[]
     {
         "Ельцин центр",
         "Плотинка",
         "Дендропарк",
-        "Зеленая роща"
+        "Зеленая роща",
+        "Театр оперы и балета",
+        "Храм на Крови",
+        "Ганина Яма",
+        "Дом Севастьянова",
+        "ЦПКиО им. Маяковского",
+        "Музей истории Екатеринбурга"
     };
+
+    // Текущие выбранные точки маршрута
+    private string[] _predefinedPoints;
+    private string[] _predefinedNames;
 
     // Информация о маршруте
     private string _routeDistance = "";
@@ -34,6 +51,9 @@ public partial class YandexMapPage : ContentPage
     public YandexMapPage()
     {
         InitializeComponent();
+
+        // Генерируем случайный маршрут при инициализации
+        GenerateRandomRoute();
 
         // Добавляем обработчик события загрузки WebView
         MapWebView.Navigated += (sender, e) => {
@@ -46,6 +66,12 @@ public partial class YandexMapPage : ContentPage
             BuildPredefinedRoute();
         };
 
+        // Добавляем обработчик для кнопки генерации случайного маршрута
+        RandomRouteButton.Clicked += (sender, e) => {
+            GenerateRandomRoute();
+            BuildPredefinedRoute();
+        };
+
         // Включаем кнопку отладки в режиме разработки
 #if DEBUG
         DebugButton.IsVisible = true;
@@ -54,13 +80,42 @@ public partial class YandexMapPage : ContentPage
                 $"Разрешение на геолокацию: {_isLocationPermissionGranted}\n" +
                 $"Текущий URL: {MapWebView.Source}\n" +
                 $"Расстояние: {_routeDistance}\n" +
-                $"Время в пути: {_routeDuration}",
+                $"Время в пути: {_routeDuration}\n" +
+                $"Точки маршрута: {string.Join(", ", _predefinedNames)}",
                 "OK");
         };
 #endif
     }
 
-    // Исправляем метод BuildPredefinedRoute, чтобы избежать дублирования переменных
+    // Метод для генерации случайного маршрута
+    private void GenerateRandomRoute()
+    {
+        // Выбираем 4 случайные точки из 10 доступных
+        var indices = GetRandomIndices(0, _allPoints.Length, 4);
+
+        _predefinedPoints = indices.Select(i => _allPoints[i]).ToArray();
+        _predefinedNames = indices.Select(i => _allNames[i]).ToArray();
+
+        Debug.WriteLine($"Сгенерирован новый случайный маршрут: {string.Join(" ? ", _predefinedNames)}");
+    }
+
+    // Метод для получения случайных индексов без повторений
+    private List<int> GetRandomIndices(int min, int max, int count)
+    {
+        var indices = new List<int>();
+        var possibleIndices = Enumerable.Range(min, max - min).ToList();
+
+        for (int i = 0; i < count && possibleIndices.Count > 0; i++)
+        {
+            int index = _random.Next(0, possibleIndices.Count);
+            indices.Add(possibleIndices[index]);
+            possibleIndices.RemoveAt(index);
+        }
+
+        return indices;
+    }
+
+    // Исправляем метод BuildPredefinedRoute, чтобы использовать случайно выбранные точки
     private async void BuildPredefinedRoute()
     {
         try
@@ -100,6 +155,9 @@ public partial class YandexMapPage : ContentPage
 
             // Строим маршрут
             LoadMapWithRoute(routeCoordsString, routeNamesString);
+
+            // Обновляем информацию о маршруте на странице
+            UpdateRouteDestinations(_predefinedNames);
         }
         catch (Exception ex)
         {
@@ -108,6 +166,16 @@ public partial class YandexMapPage : ContentPage
             LoadingIndicator.IsVisible = false;
             LoadingIndicator.IsRunning = false;
         }
+    }
+
+    // Полностью заменяем метод UpdateRouteDestinations, чтобы использовать только RouteInfoLabel
+    private void UpdateRouteDestinations(string[] destinations)
+    {
+        Device.BeginInvokeOnMainThread(() => {
+            // Используем только RouteInfoLabel вместо DestinationsLabel
+            RouteInfoLabel.Text = $"Маршрут: {string.Join(" ? ", destinations)}";
+            RouteInfoLabel.TextColor = Colors.Black;
+        });
     }
 
     protected override async void OnAppearing()
@@ -859,10 +927,10 @@ public partial class YandexMapPage : ContentPage
                                                 break;
                                                 case error.TIMEOUT:
                                                     errorMessage = 'Истекло время ожидания запроса местоположения';
-                                                    break;
+                                                break;
                                                 case error.UNKNOWN_ERROR:
                                                     errorMessage = 'Произошла неизвестная ошибка';
-                                                    break;
+                                                break;
                                             }
                                             showError('Ошибка геолокации: ' + errorMessage);
                                         },
@@ -1089,16 +1157,16 @@ public partial class YandexMapPage : ContentPage
                                             switch(error.code) {
                                                 case error.PERMISSION_DENIED:
                                                     errorMessage = 'Пользователь отказал в доступе к геолокации';
-                                                    break;
+                                                break;
                                                 case error.POSITION_UNAVAILABLE:
                                                     errorMessage = 'Информация о местоположении недоступна';
-                                                    break;
+                                                break;
                                                 case error.TIMEOUT:
                                                     errorMessage = 'Истекло время ожидания запроса местоположения';
-                                                    break;
+                                                break;
                                                 case error.UNKNOWN_ERROR:
                                                     errorMessage = 'Произошла неизвестная ошибка';
-                                                    break;
+                                                break;
                                             }
                                             showError('Ошибка геолокации: ' + errorMessage);
                                         },
@@ -1273,7 +1341,7 @@ public partial class YandexMapPage : ContentPage
         RouteInfoLabel.TextColor = Colors.Black;
     }
 
-    // Новый метод для обновления информации о маршруте с деталями
+    // Метод для обновления информации о маршруте с деталями
     private void UpdateRouteInfoWithDetails(string distance, string duration)
     {
         // Обновляем информацию о маршруте в интерфейсе
@@ -1287,7 +1355,7 @@ public partial class YandexMapPage : ContentPage
         });
     }
 
-    // Добавляем метод SaveHtmlToFile, который был удален
+    // Метод SaveHtmlToFile
     private void SaveHtmlToFile(string html)
     {
         try
@@ -1303,7 +1371,7 @@ public partial class YandexMapPage : ContentPage
         }
     }
 
-    // Добавляем метод LoadMapWithCurrentLocationAsync, который был удален
+    // Метод LoadMapWithCurrentLocationAsync
     private async Task LoadMapWithCurrentLocationAsync()
     {
         try
