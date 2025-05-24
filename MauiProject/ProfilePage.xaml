@@ -84,6 +84,22 @@
             </Button.Shadow>
         </Button>
 
+        <Button
+                Clicked="OnSoundClicked"
+                IsEnabled="True"
+                BackgroundColor="White"
+                TextColor="Black"
+                WidthRequest="300"
+                LineBreakMode="WordWrap"
+                Margin="0, 0, 0, 20"
+                x:Name="SoundButton">
+            <Button.Shadow>
+                <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+            </Button.Shadow>
+        </Button>
+
         <Button Text="Назад"
                 Clicked="OnMainClicked"
                 IsEnabled="True"

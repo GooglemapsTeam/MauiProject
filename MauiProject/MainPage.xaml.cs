@@ -4,7 +4,7 @@ namespace Emotional_Map;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage(IAudioManager audioManager)
+	public MainPage()
 	{
         InitializeComponent();
         CreatePathCards();
@@ -18,14 +18,14 @@ public partial class MainPage : ContentPage
 
     private async void OnProfileClicked(object sender, EventArgs e)
     {
-        AudioPlayer.PlaySound(AudioPlayer.ProfileButtonClickSound);
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         await Shell.Current.GoToAsync("//" + nameof(ProfilePage), true);
     }
 
     private async void OnFavouriteClicked(object sender, EventArgs e)
     {
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
+        await Shell.Current.GoToAsync("//" + nameof(FavouritePage), true);
     }
 
     private async void OnChangeMoodClicked(object sender, EventArgs e)

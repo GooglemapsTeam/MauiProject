@@ -13,7 +13,7 @@
                TextColor="Black"
                HorizontalOptions="Center"
                HorizontalTextAlignment="Center"/>
-            <Label Text="В какой обстановке вы чувствуете себя наиболее комфортно и безопасно?"
+            <Label Text="Что вас вдохновляет или успокаивает?"
                 FontSize="25"
                 TextColor="Black"
                 Margin="0, 40, 0, 0"
@@ -21,7 +21,7 @@
                 HorizontalTextAlignment="Center"/>
 
             <VerticalStackLayout VerticalOptions="Center"  HorizontalOptions="Center">
-                <Button Text="Вдали от городской суеты, на природе"
+                <Button Text="Искусство (галереи, стрит-арт)"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -38,7 +38,7 @@
 
 
 
-                <Button Text="В уютном и спокойном месте, например, в кафе или парке"
+                <Button Text="Музыка (уличные музыканты, концерты)"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -53,7 +53,7 @@
                     </Button.Shadow>
                 </Button>
 
-                <Button Text="В окружении интересных людей и оживленной атмосферы"
+                <Button Text="Книги и истории (литературные места, старые улочки)"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -69,7 +69,7 @@
 
                 </Button>
 
-                <Button Text="В хорошо знакомом и привычном месте"
+                <Button Text="Вкусная еда (необычные кафе, уличная еда)"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"

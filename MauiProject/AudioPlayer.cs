@@ -5,14 +5,21 @@ public static class AudioPlayer
 {
     private static readonly ConcurrentDictionary<string, IAudioPlayer> _activePlayers = new();
     private static bool _isDisposed;
+    public static bool DoesOn { get; set; }
 
-    public const string ProfileButtonClickSound = "profile_button_click.wav";
-    public const string CrossButtonClickSound = "cross_button_click.mp3";
-    public const string ButtonClickSound = "button_click.mp3";
-    public const string StartButtonClickSound = "start_button_click.wav";
+
+    public const string ButtonClickSound = "button_click.wav";
+    public const string ToPathButtonClickSound = "to_path_button_click.wav";
+    public const string SlideSound = "slide.mp3";
+
+    static AudioPlayer()
+    {
+        DoesOn = Preferences.Get("DoesSoundOn", true);
+    }
 
     public static void PlaySound(string sound)
     {
+        if (!DoesOn) return;
         if (_isDisposed)
             throw new InvalidOperationException("AudioPlayer has been disposed");
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Emotional_Map.FourthSurveyPage"
-             Title="FourthSurveyPage"
+             x:Class="Emotional_Map.TenthSurveyPage"
+             Title="TenthSurveyPage"
              BackgroundColor="White">
     <Grid Padding="0, 20, 0, 20">
         <Image Source="stain.png" 
@@ -13,36 +13,21 @@
                TextColor="Black"
                HorizontalOptions="Center"
                HorizontalTextAlignment="Center"/>
-            <Label Text="Какой тип места вам больше подходит?"
+            <Label Text="Что для вас важно в этом месте?"
                 FontSize="25"
                 TextColor="Black"
                 Margin="0, 40, 0, 0"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"/>
 
-            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
-                <Button Text="Природа (парки, набережные, леса)"
+            <VerticalStackLayout VerticalOptions="Center"  HorizontalOptions="Center">
+                <Button Text="Красивые виды для фото"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
-                LineBreakMode="WordWrap"                        
-                Margin="0, 20, 0, 0">
-                    <Button.Shadow>
-                        <Shadow Opacity="0.25" 
-                        Radius="4" 
-                        Offset="0, 4"/>
-                    </Button.Shadow>
-            </Button>
-
-                <Button Text="Уютные заведения (кафе, книжные, арт-пространства)"
-                Clicked="OnAnswerSelected"
-                IsEnabled="True"
-                BackgroundColor="#E6F9FF"
-                TextColor="Black"
-                WidthRequest="300"
-                LineBreakMode="WordWrap"
+                LineBreakMode="WordWrap"                    
                 Margin="0, 20, 0, 0">
                     <Button.Shadow>
                         <Shadow Opacity="0.25" 
@@ -51,14 +36,15 @@
                     </Button.Shadow>
                 </Button>
 
-                <Button Text="Тихие места (библиотеки, храмы, малоизвестные уголки города)"
+
+
+                <Button Text="Удобная зона для отдыха"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
-                HorizontalOptions="Center"
-                LineBreakMode="WordWrap"
+                LineBreakMode="WordWrap"                    
                 Margin="0, 20, 0, 0">
                     <Button.Shadow>
                         <Shadow Opacity="0.25" 
@@ -67,23 +53,54 @@
                     </Button.Shadow>
                 </Button>
 
-                <Button Text="Яркие и оживлённые места (улицы с музыкой, фестивали, рынки)"
+                <Button Text="Интересные события или активность"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
                 TextColor="Black"
                 WidthRequest="300"
-                LineBreakMode="WordWrap"
+                LineBreakMode="WordWrap"                    
                 Margin="0, 20, 0, 0">
                     <Button.Shadow>
                         <Shadow Opacity="0.25" 
                         Radius="4" 
                         Offset="0, 4"/>
                     </Button.Shadow>
+
                 </Button>
 
+                <Button Text="Мало людей"
+                Clicked="OnAnswerSelected"
+                IsEnabled="True"
+                BackgroundColor="#E6F9FF"
+                TextColor="Black"
+                WidthRequest="300"
+                LineBreakMode="WordWrap"                    
+                Margin="0, 20, 0, 0">
+                    <Button.Shadow>
+                        <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+                    </Button.Shadow>
+
+                </Button>
+
+                <Button Text="Бюджетный вариант"
+                Clicked="OnAnswerSelected"
+                IsEnabled="True"
+                BackgroundColor="#E6F9FF"
+                TextColor="Black"
+                WidthRequest="300"
+                LineBreakMode="WordWrap"                    
+                Margin="0, 20, 0, 0">
+                    <Button.Shadow>
+                        <Shadow Opacity="0.25" 
+                        Radius="4" 
+                        Offset="0, 4"/>
+                    </Button.Shadow>
+
+                </Button>
             </VerticalStackLayout>
         </VerticalStackLayout>
-
     </Grid>
 </ContentPage>

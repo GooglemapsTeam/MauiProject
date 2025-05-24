@@ -24,7 +24,7 @@
                 HorizontalTextAlignment="Center"/>
             </VerticalStackLayout>
 
-            <Button Text="Чувствую усталость и упадок сил 😴"
+            <Button Text="😊 Бодрое, хочется активности"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -41,7 +41,7 @@
 
 
 
-            <Button Text="Чувствую тревогу и беспокойство 😟"
+            <Button Text="🧘 Спокойное, хочется расслабиться"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -56,7 +56,7 @@
                 </Button.Shadow>
             </Button>
 
-            <Button Text="Чувствую скуку и апатию 🥱"
+            <Button Text="😔 Грустное, хочется отвлечься"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -72,7 +72,7 @@
                 
             </Button>
 
-            <Button Text="Чувствую раздражение и злость 😠"
+            <Button Text="🤯 Тревожное, нужно успокоиться"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"

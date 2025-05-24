@@ -8,11 +8,13 @@ public partial class ProfilePage : ContentPage
     {
         InitializeComponent();
         NameLabel.Text = Preferences.Get("Name", "Пользователь");
+        SoundButton.Text = AudioPlayer.DoesOn ? "Выключить звук" : "Включить звук";
     }
 
     public async void OnSurveyClicked(object sender, EventArgs e)
     {
         NameEntry.Unfocus();
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         await Shell.Current.GoToAsync("//" + nameof(ThirdSurveyPage), true);
     }
 
@@ -27,18 +29,32 @@ public partial class ProfilePage : ContentPage
         NameLabel.Text = NameEntry.Text.Trim();
         Preferences.Set("Name", NameLabel.Text);
         EditNameContainer.IsVisible = false;
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         NameEntry.Unfocus();
+    }
+
+    private async void OnSoundClicked(object sender, EventArgs e)
+    {
+        AudioPlayer.DoesOn = !AudioPlayer.DoesOn;
+        SoundButton.Text = AudioPlayer.DoesOn ? "Выключить звук" : "Включить звук";
+        Preferences.Set("DoesSoundOn", AudioPlayer.DoesOn);
+        NameEntry.Unfocus();
+        Navigation.RemovePage(this);
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
     }
 
     private async void OnMainClicked(object sender, EventArgs e)
     {
         NameEntry.Unfocus();
         Navigation.RemovePage(this);
-        await Navigation.PushAsync(new MainPage(AudioManager.Current));
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+        await Navigation.PushAsync(new MainPage());
     }
+
     private async void OnConnectionClicked(object sender, EventArgs e)
     {
         NameEntry.Unfocus();
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         throw new NotImplementedException();
     }
 }

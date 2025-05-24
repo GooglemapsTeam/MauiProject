@@ -37,6 +37,18 @@
         Route="SeventhSurveyPage"/>
 
     <ShellContent
+        ContentTemplate="{DataTemplate local:EighthSurveyPage}"
+        Route="EighthSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:NinethSurveyPage}"
+        Route="NinethSurveyPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:TenthSurveyPage}"
+        Route="TenthSurveyPage"/>
+
+    <ShellContent
         ContentTemplate="{DataTemplate local:ProfilePage}"
         Route="ProfilePage"/>
 
@@ -47,5 +59,9 @@
     <ShellContent
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage"/>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate local:YandexMapPage}"
+        Route="YandexMapPage"/>
 
 </Shell>
