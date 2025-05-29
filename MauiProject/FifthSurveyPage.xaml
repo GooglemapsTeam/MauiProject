@@ -36,7 +36,7 @@
                     </Button.Shadow>
                 </Button>
 
-                <Button Text=" С друзьями/партнёром"
+                <Button Text="Пара"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -51,7 +51,7 @@
                     </Button.Shadow>
                 </Button>
 
-                <Button Text="С семьёй/детьми"
+                <Button Text="Друзья"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -66,7 +66,7 @@
                     </Button.Shadow>
                 </Button>
 
-                <Button Text="С питомцем"
+                <Button Text="Семья"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"

@@ -21,7 +21,7 @@
         public class RouteData
         {
             public List<RoutePoint> Points { get; set; }
-            public string RouteType { get; set; } = "pedestrian"; // "pedestrian", "auto", "masstransit"
+            public string RouteType { get; set; } = "pedestrian"; 
         }
 
         public class RoutePoint

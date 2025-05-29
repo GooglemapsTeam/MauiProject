@@ -16,7 +16,7 @@
                TextColor="Black"
                HorizontalOptions="Center"
                HorizontalTextAlignment="Center"/>
-                <Label Text="Как бы вы описали своё текущее эмоциональное состояние?"
+                <Label Text="Какое у вас сейчас настроение?"
                 FontSize="25"
                 TextColor="Black"
                 Margin="0, 40, 0, 0"
@@ -24,7 +24,7 @@
                 HorizontalTextAlignment="Center"/>
             </VerticalStackLayout>
 
-            <Button Text="😊 Бодрое, хочется активности"
+            <Button Text="Хорошее"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -41,7 +41,7 @@
 
 
 
-            <Button Text="🧘 Спокойное, хочется расслабиться"
+            <Button Text="Нейтральное"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -56,7 +56,7 @@
                 </Button.Shadow>
             </Button>
 
-            <Button Text="😔 Грустное, хочется отвлечься"
+            <Button Text="Плохое"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"
@@ -72,7 +72,7 @@
                 
             </Button>
 
-            <Button Text="🤯 Тревожное, нужно успокоиться"
+            <Button Text="Усталость"
                 Clicked="OnAnswerSelected"
                 IsEnabled="True"
                 BackgroundColor="#E6F9FF"

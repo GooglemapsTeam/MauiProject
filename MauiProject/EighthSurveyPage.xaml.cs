@@ -11,6 +11,6 @@ public partial class EighthSurveyPage : ContentPage
         var button = (Button)sender;
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         Preferences.Set("MostSafety", button.Text);
-        await Shell.Current.GoToAsync("//" + nameof(NinethSurveyPage), true);
+        await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
     }
 }

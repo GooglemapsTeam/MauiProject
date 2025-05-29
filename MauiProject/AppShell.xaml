@@ -41,14 +41,6 @@
         Route="EighthSurveyPage"/>
 
     <ShellContent
-        ContentTemplate="{DataTemplate local:NinethSurveyPage}"
-        Route="NinethSurveyPage"/>
-
-    <ShellContent
-        ContentTemplate="{DataTemplate local:TenthSurveyPage}"
-        Route="TenthSurveyPage"/>
-
-    <ShellContent
         ContentTemplate="{DataTemplate local:ProfilePage}"
         Route="ProfilePage"/>
 
