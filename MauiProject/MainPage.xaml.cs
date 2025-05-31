@@ -9,11 +9,13 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         CreatePathCards();
         HeaderLabel.Text = Preferences.Get("Name", "Пользователь");
+        ProfileImage.Source = ImageSource.FromFile(AppImageHelper.CurrentImagePath);
     }
     protected async override void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
         HeaderLabel.Text = Preferences.Get("Name", "Пользователь");
+        ProfileImage.Source = AppImageHelper.CachedImage;
     }
 
     private async void OnProfileClicked(object sender, EventArgs e)

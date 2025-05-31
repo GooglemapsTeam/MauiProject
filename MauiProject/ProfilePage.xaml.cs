@@ -9,6 +9,13 @@ public partial class ProfilePage : ContentPage
         InitializeComponent();
         NameLabel.Text = Preferences.Get("Name", "Пользователь");
         SoundButton.Text = AudioPlayer.DoesOn ? "Выключить звук" : "Включить звук";
+        ProfileImage.Source = AppImageHelper.CachedImage;
+    }
+
+    protected async override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        ProfileImage.Source = AppImageHelper.CachedImage;
     }
 
     public async void OnSurveyClicked(object sender, EventArgs e)
@@ -56,5 +63,11 @@ public partial class ProfilePage : ContentPage
         NameEntry.Unfocus();
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         throw new NotImplementedException();
+    }
+
+    private async void OnImageClicked(object sender, EventArgs e)
+    {
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+        await Shell.Current.GoToAsync("//" + nameof(ProfileImageSetPage), true);
     }
 }

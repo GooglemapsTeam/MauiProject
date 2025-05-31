@@ -21,6 +21,10 @@
         Route="ThirdSurveyPage"/>
 
     <ShellContent
+        ContentTemplate="{DataTemplate local:ProfileImageSetPage}"
+        Route="ProfileImageSetPage"/>
+
+    <ShellContent
         ContentTemplate="{DataTemplate local:FourthSurveyPage}"
         Route="FourthSurveyPage"/>
 
