@@ -1,50 +1,113 @@
-using System.Diagnostics;
+п»їusing System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui;
 
 namespace Emotional_Map;
 
 public partial class YandexMapPage : ContentPage
 {
-    private string _apiKey = "69f697cc-32fb-4058-8056-a615983e7e93"; // Замените на ваш API-ключ Яндекс Карт
+    private string _apiKey = "69f697cc-32fb-4058-8056-a615983e7e93";
     private bool _isLocationPermissionGranted = false;
     private Random _random = new Random();
+    private string _selectedDistrict = null;
 
-    // Расширенный список предопределенных точек (10 достопримечательностей Екатеринбурга)
-    private readonly string[] _allPoints = new string[]
+    private class PlaceInfo
     {
-        "56.844106, 60.645473", // Ельцин центр
-        "56.837527, 60.604722", // Плотинка Екатеринбург
-        "56.826389, 60.631111", // Дендропарк
-        "56.821667, 60.621944", // Зеленая роща
-        "56.838660, 60.605514", // Театр оперы и балета
-        "56.844431, 60.617524", // Храм на Крови
-        "56.846815, 60.610605", // Ганина Яма
-        "56.824687, 60.595051", // Дом Севастьянова
-        "56.840863, 60.650324", // ЦПКиО им. Маяковского
-        "56.830904, 60.602989"  // Музей истории Екатеринбурга
+        public string Name { get; set; }
+        public string Coordinates { get; set; }
+        public string District { get; set; }
+    }
+
+    private readonly Dictionary<string, string> _districts = new Dictionary<string, string>
+    {
+        { "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№", "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№ СЂР°Р№РѕРЅ" },
+        { "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№", "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№ СЂР°Р№РѕРЅ" },
+        { "РљРёСЂРѕРІСЃРєРёР№", "РљРёСЂРѕРІСЃРєРёР№ СЂР°Р№РѕРЅ" },
+        { "Р›РµРЅРёРЅСЃРєРёР№", "Р›РµРЅРёРЅСЃРєРёР№ СЂР°Р№РѕРЅ" },
+        { "РћРєС‚СЏР±СЂСЊСЃРєРёР№", "РћРєС‚СЏР±СЂСЊСЃРєРёР№ СЂР°Р№РѕРЅ" },
+        { "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№", "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№ СЂР°Р№РѕРЅ" },
+        { "Р§РєР°Р»РѕРІСЃРєРёР№", "Р§РєР°Р»РѕРІСЃРєРёР№ СЂР°Р№РѕРЅ" }
     };
 
-    // Названия всех точек маршрута
-    private readonly string[] _allNames = new string[]
+    private readonly List<PlaceInfo> _allPlacesInfo = new List<PlaceInfo>
     {
-        "Ельцин центр",
-        "Плотинка",
-        "Дендропарк",
-        "Зеленая роща",
-        "Театр оперы и балета",
-        "Храм на Крови",
-        "Ганина Яма",
-        "Дом Севастьянова",
-        "ЦПКиО им. Маяковского",
-        "Музей истории Екатеринбурга"
+        // Р’РµСЂС…-РСЃРµС‚СЃРєРёР№ СЂР°Р№РѕРЅ
+        new PlaceInfo { Name = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№ РїСЂСѓРґ", Coordinates = "56.836106, 60.545473", District = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№" },
+        new PlaceInfo { Name = "РџР°СЂРє В«Р—РµР»РµРЅР°СЏ СЂРѕС‰Р°В»", Coordinates = "56.826660, 60.605514", District = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№" },
+        new PlaceInfo { Name = "Р’РР—-С†РµРЅС‚СЂ", Coordinates = "56.824687, 60.555051", District = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№" },
+        new PlaceInfo { Name = "РЎРјРѕС‚СЂРѕРІР°СЏ РїР»РѕС‰Р°РґРєР° Сѓ Р’РР—Р°", Coordinates = "56.836815, 60.550605", District = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№" },
+        new PlaceInfo { Name = "РќР°Р±РµСЂРµР¶РЅР°СЏ Р’РµСЂС…-РСЃРµС‚СЃРєРѕРіРѕ РїСЂСѓРґР°", Coordinates = "56.835904, 60.547989", District = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№" },
+        new PlaceInfo { Name = "РџР°СЂРє РџРѕР±РµРґС‹", Coordinates = "56.820863, 60.550324", District = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№" },
+        new PlaceInfo { Name = "РЎРєРІРµСЂ Сѓ Р”Рљ Р’РР—", Coordinates = "56.824687, 60.555051", District = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№" },
+        new PlaceInfo { Name = "РџР»СЏР¶ РЅР° Р’РµСЂС…-РСЃРµС‚СЃРєРѕРј РїСЂСѓРґСѓ", Coordinates = "56.830904, 60.542989", District = "Р’РµСЂС…-РСЃРµС‚СЃРєРёР№" },
+        
+        // Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№ СЂР°Р№РѕРЅ
+        new PlaceInfo { Name = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№ РІРѕРєР·Р°Р»", Coordinates = "56.857527, 60.604722", District = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№" },
+        new PlaceInfo { Name = "РќР°Р±РµСЂРµР¶РЅР°СЏ РСЃРµС‚Рё Сѓ Р–Р” РІРѕРєР·Р°Р»Р°", Coordinates = "56.855527, 60.604722", District = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№" },
+        new PlaceInfo { Name = "РЎРєРІРµСЂ Сѓ РўР®Р—Р°", Coordinates = "56.848389, 60.611111", District = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№" },
+        new PlaceInfo { Name = "РџСЂРёРІРѕРєР·Р°Р»СЊРЅР°СЏ РїР»РѕС‰Р°РґСЊ", Coordinates = "56.856660, 60.605514", District = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№" },
+        new PlaceInfo { Name = "РџР°СЂРє РёРј. РџР°РІР»РёРєР° РњРѕСЂРѕР·РѕРІР°", Coordinates = "56.842106, 60.615473", District = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№" },
+        new PlaceInfo { Name = "Р”Рљ Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅРёРєРѕРІ", Coordinates = "56.852904, 60.602989", District = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№" },
+        new PlaceInfo { Name = "РЎРєРІРµСЂ РЎС‚СЂРѕРёС‚РµР»РµР№", Coordinates = "56.852687, 60.595051", District = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№" },
+        new PlaceInfo { Name = "РџР»РѕС‰Р°РґСЊ РџРµСЂРІРѕР№ РџСЏС‚РёР»РµС‚РєРё", Coordinates = "56.858863, 60.610324", District = "Р–РµР»РµР·РЅРѕРґРѕСЂРѕР¶РЅС‹Р№" },
+        
+        // РљРёСЂРѕРІСЃРєРёР№ СЂР°Р№РѕРЅ
+        new PlaceInfo { Name = "Р¦РџРљРёРћ РёРј. РњР°СЏРєРѕРІСЃРєРѕРіРѕ", Coordinates = "56.878106, 60.585473", District = "РљРёСЂРѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РўРµР°С‚СЂ РґСЂР°РјС‹", Coordinates = "56.866687, 60.575051", District = "РљРёСЂРѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РЎРєРІРµСЂ РљРёСЂРѕРІСЃРєРёР№", Coordinates = "56.870389, 60.591111", District = "РљРёСЂРѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РќР°Р±РµСЂРµР¶РЅР°СЏ РСЃРµС‚Рё РѕРєРѕР»Рѕ Р¦РџРљРёРћ", Coordinates = "56.876431, 60.587524", District = "РљРёСЂРѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР°СЂРє Р›РёРїРѕРІС‹Р№", Coordinates = "56.878815, 60.580605", District = "РљРёСЂРѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР»РѕС‰Р°РґСЊ РљРёСЂРѕРІР°", Coordinates = "56.866904, 60.582989", District = "РљРёСЂРѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "Р”РѕРј РњР°РєР»РµС†РєРѕРіРѕ", Coordinates = "56.872863, 60.590324", District = "РљРёСЂРѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РЈСЃР°РґСЊР±Р° РўР°СЂР°СЃРѕРІР°", Coordinates = "56.869527, 60.594722", District = "РљРёСЂРѕРІСЃРєРёР№" },
+        
+        // Р›РµРЅРёРЅСЃРєРёР№ СЂР°Р№РѕРЅ
+        new PlaceInfo { Name = "РџР»РѕС‚РёРЅРєР°", Coordinates = "56.837527, 60.614722", District = "Р›РµРЅРёРЅСЃРєРёР№" },
+        new PlaceInfo { Name = "РћРїРµСЂРЅС‹Р№ С‚РµР°С‚СЂ", Coordinates = "56.838660, 60.615514", District = "Р›РµРЅРёРЅСЃРєРёР№" },
+        new PlaceInfo { Name = "Р›РёС‚РµСЂР°С‚СѓСЂРЅС‹Р№ РєРІР°СЂС‚Р°Р»", Coordinates = "56.836389, 60.611111", District = "Р›РµРЅРёРЅСЃРєРёР№" },
+        new PlaceInfo { Name = "Р”РѕРј РЎРµРІР°СЃС‚СЊСЏРЅРѕРІР°", Coordinates = "56.834687, 60.615051", District = "Р›РµРЅРёРЅСЃРєРёР№" },
+        new PlaceInfo { Name = "РСЃС‚РѕСЂРёС‡РµСЃРєРёР№ СЃРєРІРµСЂ", Coordinates = "56.837527, 60.614722", District = "Р›РµРЅРёРЅСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР»РѕС‰Р°РґСЊ РўСЂСѓРґР°", Coordinates = "56.837527, 60.614722", District = "Р›РµРЅРёРЅСЃРєРёР№" },
+        new PlaceInfo { Name = "РўРµР°С‚СЂР°Р»СЊРЅС‹Р№ СЃРєРІРµСЂ", Coordinates = "56.838660, 60.615514", District = "Р›РµРЅРёРЅСЃРєРёР№" },
+        new PlaceInfo { Name = "РќР°Р±РµСЂРµР¶РЅР°СЏ РСЃРµС‚Рё РѕС‚ РїР»РѕС‚РёРЅРєРё", Coordinates = "56.837527, 60.614722", District = "Р›РµРЅРёРЅСЃРєРёР№" },
+        
+        // РћРєС‚СЏР±СЂСЊСЃРєРёР№ СЂР°Р№РѕРЅ
+        new PlaceInfo { Name = "РҐР°СЂРёС‚РѕРЅРѕРІСЃРєРёР№ РїР°СЂРє", Coordinates = "56.841527, 60.634722", District = "РћРєС‚СЏР±СЂСЊСЃРєРёР№" },
+        new PlaceInfo { Name = "Р¤РёР»Р°СЂРјРѕРЅРёСЏ", Coordinates = "56.832389, 60.651111", District = "РћРєС‚СЏР±СЂСЊСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР»РѕС‰Р°РґСЊ 1905 РіРѕРґР°", Coordinates = "56.838904, 60.612989", District = "РћРєС‚СЏР±СЂСЊСЃРєРёР№" },
+        new PlaceInfo { Name = "РќР°Р±РµСЂРµР¶РЅР°СЏ Р Р°Р±РѕС‡РµР№ РњРѕР»РѕРґС‘Р¶Рё", Coordinates = "56.842660, 60.635514", District = "РћРєС‚СЏР±СЂСЊСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР°СЂРє Р­РЅРіРµР»СЊСЃР°", Coordinates = "56.816106, 60.635473", District = "РћРєС‚СЏР±СЂСЊСЃРєРёР№" },
+        new PlaceInfo { Name = "РЎРєРІРµСЂ РћРєС‚СЏР±СЂСЊСЃРєРёР№", Coordinates = "56.828687, 60.635051", District = "РћРєС‚СЏР±СЂСЊСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР°СЂРє СЃРµРјРµР№РЅС‹С… С‚СЂР°РґРёС†РёР№", Coordinates = "56.830815, 60.640605", District = "РћРєС‚СЏР±СЂСЊСЃРєРёР№" },
+        new PlaceInfo { Name = "Р”РІРѕСЂ СЃ РљРѕСЃРјРѕРЅР°РІС‚Р°РјРё", Coordinates = "56.824863, 60.650324", District = "РћРєС‚СЏР±СЂСЊСЃРєРёР№" },
+        
+        // РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№ СЂР°Р№РѕРЅ
+        new PlaceInfo { Name = "РџР°СЂРє РЈСЂР°Р»РјР°С€", Coordinates = "56.890106, 60.615473", District = "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№" },
+        new PlaceInfo { Name = "Р”Рљ РЈСЂР°Р»РјР°С€", Coordinates = "56.890687, 60.615051", District = "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РЎРєРІРµСЂ Р­РЅРµСЂРіРµС‚РёРєРѕРІ", Coordinates = "56.893527, 60.614722", District = "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РќР°Р±РµСЂРµР¶РЅР°СЏ РСЃРµС‚Рё Сѓ РЈР—РўРњ", Coordinates = "56.894389, 60.611111", District = "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР°СЂРє РљР°Р»РёРЅРѕРІСЃРєРёР№", Coordinates = "56.900431, 60.617524", District = "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РЎРєРІРµСЂ РЎС‚СЂРѕРёС‚РµР»РµР№", Coordinates = "56.892815, 60.610605", District = "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР»РѕС‰Р°РґСЊ РџРµСЂРІРѕР№ РџСЏС‚РёР»РµС‚РєРё", Coordinates = "56.896863, 60.610324", District = "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РџСЂРѕСЃРїРµРєС‚ РљРѕСЃРјРѕРЅР°РІС‚РѕРІ", Coordinates = "56.894660, 60.615514", District = "РћСЂРґР¶РѕРЅРёРєРёРґР·РµРІСЃРєРёР№" },
+        
+        // Р§РєР°Р»РѕРІСЃРєРёР№ СЂР°Р№РѕРЅ
+        new PlaceInfo { Name = "Р›РµСЃРѕРїР°СЂРє", Coordinates = "56.792106, 60.635473", District = "Р§РєР°Р»РѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РќР°Р±РµСЂРµР¶РЅР°СЏ РСЃРµС‚Рё (Р‘РѕС‚Р°РЅРёРєР°)", Coordinates = "56.795527, 60.634722", District = "Р§РєР°Р»РѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РЎРєРІРµСЂ Р§РєР°Р»РѕРІСЃРєРёР№", Coordinates = "56.796389, 60.631111", District = "Р§РєР°Р»РѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР°СЂРє Р—РµР»С‘РЅС‹Р№ РѕСЃС‚СЂРѕРІ", Coordinates = "56.792431, 60.627524", District = "Р§РєР°Р»РѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РўР¦ Р‘РѕС‚Р°РЅРёРєР° РњРѕР»Р»", Coordinates = "56.794815, 60.630605", District = "Р§РєР°Р»РѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РџР»СЏР¶ РЁРёСЂРѕРєР°СЏ СЂРµС‡РєР°", Coordinates = "56.798863, 60.630324", District = "Р§РєР°Р»РѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "Р”Рљ Р•Р»РёР·Р°РІРµС‚РёРЅСЃРєРёР№", Coordinates = "56.792904, 60.622989", District = "Р§РєР°Р»РѕРІСЃРєРёР№" },
+        new PlaceInfo { Name = "РЈР»РёС†Р° 8 РњР°СЂС‚Р°", Coordinates = "56.792687, 60.625051", District = "Р§РєР°Р»РѕРІСЃРєРёР№" }
     };
 
-    // Текущие выбранные точки маршрута
     private string[] _predefinedPoints;
     private string[] _predefinedNames;
-
-    // Информация о маршруте
     private string _routeDistance = "";
     private string _routeDuration = "";
 
@@ -52,128 +115,525 @@ public partial class YandexMapPage : ContentPage
     {
         InitializeComponent();
 
-        // Генерируем случайный маршрут при инициализации
-        GenerateRandomRoute();
-
-        // Добавляем обработчик события загрузки WebView
         MapWebView.Navigated += (sender, e) => {
             LoadingIndicator.IsVisible = false;
             LoadingIndicator.IsRunning = false;
         };
 
-        // Добавляем обработчик для кнопки построения маршрута
+        // РњРќРћР–Р•РЎРўР’Р•РќРќР«Р• РћР‘Р РђР‘РћРўР§РРљР РґР»СЏ РєРЅРѕРїРєРё РЅР°Р·Р°Рґ
+        SetupBackButtonHandlers();
+
         BuildRouteButton.Clicked += (sender, e) => {
             BuildPredefinedRoute();
         };
 
-        // Добавляем обработчик для кнопки генерации случайного маршрута
         RandomRouteButton.Clicked += (sender, e) => {
             GenerateRandomRoute();
             BuildPredefinedRoute();
         };
 
-        // Включаем кнопку отладки в режиме разработки
+        SelectDistrictButton.Clicked += async (sender, e) => {
+            await ShowDistrictSelectionDialog();
+        };
+
 #if DEBUG
         DebugButton.IsVisible = true;
         DebugButton.Clicked += async (sender, e) => {
-            await DisplayAlert("Отладочная информация",
-                $"Разрешение на геолокацию: {_isLocationPermissionGranted}\n" +
-                $"Текущий URL: {MapWebView.Source}\n" +
-                $"Расстояние: {_routeDistance}\n" +
-                $"Время в пути: {_routeDuration}\n" +
-                $"Точки маршрута: {string.Join(", ", _predefinedNames)}",
-                "OK");
+            await ShowDebugInfo();
         };
 #endif
+
+        UpdateButtonsState();
     }
 
-    // Метод для генерации случайного маршрута
+    // РЈРџР РћР©Р•РќРќР«Р™ РјРµС‚РѕРґ РґР»СЏ РЅР°СЃС‚СЂРѕР№РєРё РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ РєРЅРѕРїРєРё РЅР°Р·Р°Рґ
+    private void SetupBackButtonHandlers()
+    {
+        try
+        {
+            // РСЃРїРѕР»СЊР·СѓРµРј С‚РѕР»СЊРєРѕ РѕР±С‹С‡РЅСѓСЋ РєРЅРѕРїРєСѓ
+            BackButton.Clicked += async (sender, e) => {
+                await HandleBackNavigation("Button.Clicked");
+            };
+
+            Debug.WriteLine("РћР±СЂР°Р±РѕС‚С‡РёРє РєРЅРѕРїРєРё РЅР°Р·Р°Рґ РЅР°СЃС‚СЂРѕРµРЅ");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё РЅР°СЃС‚СЂРѕР№РєРµ РѕР±СЂР°Р±РѕС‚С‡РёРєР° РєРЅРѕРїРєРё РЅР°Р·Р°Рґ: {ex.Message}");
+        }
+    }
+
+    // РќРћР’Р«Р™ СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№ РјРµС‚РѕРґ РѕР±СЂР°Р±РѕС‚РєРё РЅР°РІРёРіР°С†РёРё РЅР°Р·Р°Рґ
+    private async Task HandleBackNavigation(string source)
+    {
+        try
+        {
+            Debug.WriteLine($"РќР°РІРёРіР°С†РёСЏ РЅР°Р·Р°Рґ РІС‹Р·РІР°РЅР° РёР·: {source}");
+
+            // РџРѕРєР°Р·С‹РІР°РµРј РґРёР°Р»РѕРі РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ
+            bool shouldGoBack = await DisplayAlert("РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ", "Р’С‹ С…РѕС‚РёС‚Рµ РІРµСЂРЅСѓС‚СЊСЃСЏ РІ РіР»Р°РІРЅРѕРµ РјРµРЅСЋ?", "Р”Р°", "РќРµС‚");
+
+            if (!shouldGoBack)
+            {
+                Debug.WriteLine("РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РѕС‚РјРµРЅРёР» РЅР°РІРёРіР°С†РёСЋ РЅР°Р·Р°Рґ");
+                return;
+            }
+
+            // РџРѕР»СѓС‡Р°РµРј РѕС‚Р»Р°РґРѕС‡РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ С‚РµРєСѓС‰РµРј СЃРѕСЃС‚РѕСЏРЅРёРё РЅР°РІРёРіР°С†РёРё
+            var currentRoute = Shell.Current?.CurrentState?.Location?.ToString() ?? "РќРµРёР·РІРµСЃС‚РЅРѕ";
+            Debug.WriteLine($"РўРµРєСѓС‰РёР№ РјР°СЂС€СЂСѓС‚: {currentRoute}");
+
+            bool navigationSuccessful = false;
+
+            // РЎРїРѕСЃРѕР± 1: РќР°РІРёРіР°С†РёСЏ Рє MainPage С‡РµСЂРµР· РїСЂР°РІРёР»СЊРЅС‹Р№ РјР°СЂС€СЂСѓС‚ РёР· AppShell
+            try
+            {
+                Debug.WriteLine("РџРѕРїС‹С‚РєР° РЅР°РІРёРіР°С†РёРё Рє //MainPage");
+                await Shell.Current.GoToAsync("//MainPage");
+                navigationSuccessful = true;
+                Debug.WriteLine("РќР°РІРёРіР°С†РёСЏ Рє //MainPage СѓСЃРїРµС€РЅР°");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"РќР°РІРёРіР°С†РёСЏ Рє //MainPage РЅРµ СѓРґР°Р»Р°СЃСЊ: {ex.Message}");
+            }
+
+            // РЎРїРѕСЃРѕР± 2: РџРѕРїСЂРѕР±СѓРµРј РЅР°РІРёРіР°С†РёСЋ С‡РµСЂРµР· РјР°СЂС€СЂСѓС‚ MainPage
+            try
+            {
+                Debug.WriteLine("РџРѕРїС‹С‚РєР° РЅР°РІРёРіР°С†РёРё Рє MainPage");
+                await Shell.Current.GoToAsync("MainPage");
+                navigationSuccessful = true;
+                Debug.WriteLine("РќР°РІРёРіР°С†РёСЏ Рє MainPage СѓСЃРїРµС€РЅР°");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"РќР°РІРёРіР°С†РёСЏ Рє MainPage РЅРµ СѓРґР°Р»Р°СЃСЊ: {ex.Message}");
+            }
+
+            // РЎРїРѕСЃРѕР± 3: РџРѕРїСЂРѕР±СѓРµРј РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅСѓСЋ РЅР°РІРёРіР°С†РёСЋ РЅР°Р·Р°Рґ
+            try
+            {
+                Debug.WriteLine("РџРѕРїС‹С‚РєР° РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕР№ РЅР°РІРёРіР°С†РёРё ..");
+                await Shell.Current.GoToAsync("..");
+                navigationSuccessful = true;
+                Debug.WriteLine("РћС‚РЅРѕСЃРёС‚РµР»СЊРЅР°СЏ РЅР°РІРёРіР°С†РёСЏ СѓСЃРїРµС€РЅР°");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"РћС‚РЅРѕСЃРёС‚РµР»СЊРЅР°СЏ РЅР°РІРёРіР°С†РёСЏ РЅРµ СѓРґР°Р»Р°СЃСЊ: {ex.Message}");
+            }
+
+            // РЎРїРѕСЃРѕР± 4: Navigation.PopAsync (РЅРµСЃРєРѕР»СЊРєРѕ СЂР°Р· РµСЃР»Рё РЅСѓР¶РЅРѕ)
+            try
+            {
+                if (Navigation != null && Navigation.NavigationStack.Count > 1)
+                {
+                    Debug.WriteLine($"РџРѕРїС‹С‚РєР° Navigation.PopAsync(), СЃС‚РµРє СЃРѕРґРµСЂР¶РёС‚ {Navigation.NavigationStack.Count} СЃС‚СЂР°РЅРёС†");
+
+                    // РџРѕРїСЂРѕР±СѓРµРј РІРµСЂРЅСѓС‚СЊСЃСЏ РЅР° РЅРµСЃРєРѕР»СЊРєРѕ СЃС‚СЂР°РЅРёС† РЅР°Р·Р°Рґ РґРѕ MainPage
+                    while (Navigation.NavigationStack.Count > 1)
+                    {
+                        var currentPage = Navigation.NavigationStack.LastOrDefault();
+                        Debug.WriteLine($"РўРµРєСѓС‰Р°СЏ СЃС‚СЂР°РЅРёС†Р° РІ СЃС‚РµРєРµ: {currentPage?.GetType().Name}");
+
+                        await Navigation.PopAsync();
+
+                        // РџСЂРѕРІРµСЂСЏРµРј, РґРѕСЃС‚РёРіР»Рё Р»Рё РјС‹ MainPage
+                        var newCurrentPage = Navigation.NavigationStack.LastOrDefault();
+                        if (newCurrentPage?.GetType().Name == "MainPage")
+                        {
+                            Debug.WriteLine("Р”РѕСЃС‚РёРіР»Рё MainPage С‡РµСЂРµР· PopAsync");
+                            navigationSuccessful = true;
+                            return;
+                        }
+                    }
+
+                    if (!navigationSuccessful)
+                    {
+                        Debug.WriteLine("PopAsync РЅР°РІРёРіР°С†РёСЏ Р·Р°РІРµСЂС€РµРЅР°, РЅРѕ MainPage РЅРµ РЅР°Р№РґРµРЅР°");
+                        navigationSuccessful = true; // РЎС‡РёС‚Р°РµРј СѓСЃРїРµС€РЅРѕР№, С‚Р°Рє РєР°Рє РјС‹ РІРµСЂРЅСѓР»РёСЃСЊ РЅР°Р·Р°Рґ
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"PopAsync РЅР°РІРёРіР°С†РёСЏ РЅРµ СѓРґР°Р»Р°СЃСЊ: {ex.Message}");
+            }
+
+            // РЎРїРѕСЃРѕР± 5: РџРѕРїСЂРѕР±СѓРµРј СѓСЃС‚Р°РЅРѕРІРёС‚СЊ MainPage РєР°Рє РєРѕСЂРЅРµРІСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ
+            try
+            {
+                Debug.WriteLine("РџРѕРїС‹С‚РєР° СЃРѕР·РґР°РЅРёСЏ РЅРѕРІРѕР№ MainPage");
+                var mainPage = new MainPage();
+                Application.Current.MainPage = new AppShell();
+                await Shell.Current.GoToAsync("//MainPage");
+                navigationSuccessful = true;
+                Debug.WriteLine("РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕР№ MainPage СѓСЃРїРµС€РЅРѕ");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕР№ MainPage РЅРµ СѓРґР°Р»РѕСЃСЊ: {ex.Message}");
+            }
+
+            // Р•СЃР»Рё РЅРёС‡РµРіРѕ РЅРµ СЃСЂР°Р±РѕС‚Р°Р»Рѕ, РїРѕРєР°Р·С‹РІР°РµРј РїРѕРґСЂРѕР±РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ
+            if (!navigationSuccessful)
+            {
+                Debug.WriteLine("Р’СЃРµ СЃРїРѕСЃРѕР±С‹ РЅР°РІРёРіР°С†РёРё РЅРµ СѓРґР°Р»РёСЃСЊ");
+
+                string debugInfo = $"РћС‚Р»Р°РґРѕС‡РЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ РЅР°РІРёРіР°С†РёРё:\n" +
+                                  $"РўРµРєСѓС‰РёР№ РјР°СЂС€СЂСѓС‚: {currentRoute}\n" +
+                                  $"Navigation Stack: {Navigation?.NavigationStack?.Count ?? 0} СЃС‚СЂР°РЅРёС†\n" +
+                                  $"Modal Stack: {Navigation?.ModalStack?.Count ?? 0} СЃС‚СЂР°РЅРёС†\n" +
+                                  $"Shell.Current: {(Shell.Current != null ? "Р”РѕСЃС‚СѓРїРµРЅ" : "РќРµРґРѕСЃС‚СѓРїРµРЅ")}\n" +
+                                  $"Application.Current.MainPage: {(Application.Current?.MainPage != null ? Application.Current.MainPage.GetType().Name : "РќРµРґРѕСЃС‚СѓРїРµРЅ")}";
+
+                // РџСЂРµРґР»Р°РіР°РµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ РІР°СЂРёР°РЅС‚С‹
+                var action = await DisplayActionSheet("РќРµ СѓРґР°Р»РѕСЃСЊ РІРµСЂРЅСѓС‚СЊСЃСЏ РІ РіР»Р°РІРЅРѕРµ РјРµРЅСЋ", "РћС‚РјРµРЅР°", null,
+                    "РџРµСЂРµР·Р°РїСѓСЃС‚РёС‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ", "РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ СЃРёСЃС‚РµРјРЅСѓСЋ РєРЅРѕРїРєСѓ РЅР°Р·Р°Рґ", "РџРѕРєР°Р·Р°С‚СЊ РѕС‚Р»Р°РґРѕС‡РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ");
+
+                switch (action)
+                {
+                    case "РџРµСЂРµР·Р°РїСѓСЃС‚РёС‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ":
+                        // РџРѕРїСЂРѕР±СѓРµРј РїРµСЂРµР·Р°РїСѓСЃС‚РёС‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ
+                        try
+                        {
+                            Application.Current.MainPage = new AppShell();
+                            await Shell.Current.GoToAsync("//MainPage");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"РџРµСЂРµР·Р°РїСѓСЃРє РїСЂРёР»РѕР¶РµРЅРёСЏ РЅРµ СѓРґР°Р»СЃСЏ: {ex.Message}");
+                            await DisplayAlert("РћС€РёР±РєР°", "РќРµ СѓРґР°Р»РѕСЃСЊ РїРµСЂРµР·Р°РїСѓСЃС‚РёС‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ. РџРѕР¶Р°Р»СѓР№СЃС‚Р°, Р·Р°РєСЂРѕР№С‚Рµ Рё РѕС‚РєСЂРѕР№С‚Рµ РїСЂРёР»РѕР¶РµРЅРёРµ РІСЂСѓС‡РЅСѓСЋ.", "OK");
+                        }
+                        break;
+                    case "РџРѕРєР°Р·Р°С‚СЊ РѕС‚Р»Р°РґРѕС‡РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ":
+                        await DisplayAlert("РћС‚Р»Р°РґРѕС‡РЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ", debugInfo, "OK");
+                        break;
+                    default:
+                        await DisplayAlert("РРЅС„РѕСЂРјР°С†РёСЏ",
+                            "РСЃРїРѕР»СЊР·СѓР№С‚Рµ СЃРёСЃС‚РµРјРЅСѓСЋ РєРЅРѕРїРєСѓ РЅР°Р·Р°Рґ РёР»Рё РїРµСЂРµР·Р°РїСѓСЃС‚РёС‚Рµ РїСЂРёР»РѕР¶РµРЅРёРµ.",
+                            "OK");
+                        break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"РљСЂРёС‚РёС‡РµСЃРєР°СЏ РѕС€РёР±РєР° РІ HandleBackNavigation: {ex.Message}");
+            await DisplayAlert("РћС€РёР±РєР°", $"РћС€РёР±РєР° РЅР°РІРёРіР°С†РёРё: {ex.Message}", "OK");
+        }
+    }
+
+    // РџРµСЂРµРѕРїСЂРµРґРµР»СЏРµРј СЃРёСЃС‚РµРјРЅСѓСЋ РєРЅРѕРїРєСѓ РЅР°Р·Р°Рґ
+    protected override bool OnBackButtonPressed()
+    {
+        try
+        {
+            Debug.WriteLine("РЎРёСЃС‚РµРјРЅР°СЏ РєРЅРѕРїРєР° РЅР°Р·Р°Рґ РЅР°Р¶Р°С‚Р°");
+
+            // Р—Р°РїСѓСЃРєР°РµРј РѕР±СЂР°Р±РѕС‚РєСѓ РЅР°РІРёРіР°С†РёРё Р°СЃРёРЅС…СЂРѕРЅРЅРѕ
+            Device.BeginInvokeOnMainThread(async () => {
+                await HandleBackNavigation("System Back Button");
+            });
+
+            // Р’РѕР·РІСЂР°С‰Р°РµРј true, С‡С‚РѕР±С‹ РїСЂРµРґРѕС‚РІСЂР°С‚РёС‚СЊ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРµ РїРѕРІРµРґРµРЅРёРµ
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ СЃРёСЃС‚РµРјРЅРѕР№ РєРЅРѕРїРєРё РЅР°Р·Р°Рґ: {ex.Message}");
+            return base.OnBackButtonPressed();
+        }
+    }
+
+    private async Task ShowNavigationStructure()
+    {
+        try
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("=== РЎРўР РЈРљРўРЈР Рђ РќРђР’РР“РђР¦РР ===");
+
+            // РРЅС„РѕСЂРјР°С†РёСЏ Рѕ Shell
+            if (Shell.Current != null)
+            {
+                sb.AppendLine($"Shell.Current: {Shell.Current.GetType().Name}");
+                sb.AppendLine($"Current Route: {Shell.Current.CurrentState?.Location}");
+                sb.AppendLine($"Current Page: {Shell.Current.CurrentPage?.GetType().Name}");
+            }
+            else
+            {
+                sb.AppendLine("Shell.Current: РќР• Р”РћРЎРўРЈРџР•Рќ");
+            }
+
+            // РРЅС„РѕСЂРјР°С†РёСЏ Рѕ Navigation Stack
+            if (Navigation?.NavigationStack != null)
+            {
+                sb.AppendLine($"\nNavigation Stack ({Navigation.NavigationStack.Count} СЃС‚СЂР°РЅРёС†):");
+                for (int i = 0; i < Navigation.NavigationStack.Count; i++)
+                {
+                    var page = Navigation.NavigationStack[i];
+                    sb.AppendLine($"  [{i}] {page.GetType().Name} - {page.Title}");
+                }
+            }
+
+            // РРЅС„РѕСЂРјР°С†РёСЏ Рѕ Modal Stack
+            if (Navigation?.ModalStack != null && Navigation.ModalStack.Count > 0)
+            {
+                sb.AppendLine($"\nModal Stack ({Navigation.ModalStack.Count} СЃС‚СЂР°РЅРёС†):");
+                for (int i = 0; i < Navigation.ModalStack.Count; i++)
+                {
+                    var page = Navigation.ModalStack[i];
+                    sb.AppendLine($"  [{i}] {page.GetType().Name} - {page.Title}");
+                }
+            }
+
+            // РРЅС„РѕСЂРјР°С†РёСЏ Рѕ Application.Current.MainPage
+            if (Application.Current?.MainPage != null)
+            {
+                sb.AppendLine($"\nApplication.Current.MainPage: {Application.Current.MainPage.GetType().Name}");
+            }
+
+            await DisplayAlert("РЎС‚СЂСѓРєС‚СѓСЂР° РЅР°РІРёРіР°С†РёРё", sb.ToString(), "OK");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РћС€РёР±РєР° РїРѕР»СѓС‡РµРЅРёСЏ СЃС‚СЂСѓРєС‚СѓСЂС‹ РЅР°РІРёРіР°С†РёРё: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task ShowDebugInfo()
+    {
+        var action = await DisplayActionSheet("РћС‚Р»Р°РґРѕС‡РЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ", "РћС‚РјРµРЅР°", null,
+            "РџРѕРєР°Р·Р°С‚СЊ РѕР±С‰СѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ", "РџРѕРєР°Р·Р°С‚СЊ СЃС‚СЂСѓРєС‚СѓСЂСѓ РЅР°РІРёРіР°С†РёРё", "РўРµСЃС‚ РЅР°РІРёРіР°С†РёРё");
+
+        switch (action)
+        {
+            case "РџРѕРєР°Р·Р°С‚СЊ РѕР±С‰СѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ":
+                await ShowGeneralDebugInfo();
+                break;
+            case "РџРѕРєР°Р·Р°С‚СЊ СЃС‚СЂСѓРєС‚СѓСЂСѓ РЅР°РІРёРіР°С†РёРё":
+                await ShowNavigationStructure();
+                break;
+            case "РўРµСЃС‚ РЅР°РІРёРіР°С†РёРё":
+                await TestNavigation();
+                break;
+        }
+    }
+
+    private async Task ShowGeneralDebugInfo()
+    {
+        var shellInfo = Shell.Current != null ? "Р”РѕСЃС‚СѓРїРµРЅ" : "РќРµРґРѕСЃС‚СѓРїРµРЅ";
+        var navigationStackCount = Navigation?.NavigationStack?.Count ?? 0;
+        var modalStackCount = Navigation?.ModalStack?.Count ?? 0;
+        var currentPage = Shell.Current?.CurrentPage?.GetType().Name ?? "РќРµРёР·РІРµСЃС‚РЅРѕ";
+        var currentRoute = Shell.Current?.CurrentState?.Location?.ToString() ?? "РќРµРёР·РІРµСЃС‚РЅРѕ";
+
+        await DisplayAlert("РћР±С‰Р°СЏ РѕС‚Р»Р°РґРѕС‡РЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ",
+            $"Р Р°Р·СЂРµС€РµРЅРёРµ РЅР° РіРµРѕР»РѕРєР°С†РёСЋ: {_isLocationPermissionGranted}\n" +
+            $"Р’С‹Р±СЂР°РЅРЅС‹Р№ СЂР°Р№РѕРЅ: {_selectedDistrict ?? "РќРµ РІС‹Р±СЂР°РЅ"}\n" +
+            $"Shell.Current: {shellInfo}\n" +
+            $"Navigation Stack Count: {navigationStackCount}\n" +
+            $"Modal Stack Count: {modalStackCount}\n" +
+            $"Current Page: {currentPage}\n" +
+            $"Current Route: {currentRoute}",
+            "OK");
+    }
+
+    private async Task TestNavigation()
+    {
+        var testRoutes = new[] { "..", "//MainPage", "//main", "/MainPage" };
+
+        foreach (var route in testRoutes)
+        {
+            try
+            {
+                var result = await DisplayAlert("РўРµСЃС‚ РЅР°РІРёРіР°С†РёРё",
+                    $"РџРѕРїСЂРѕР±РѕРІР°С‚СЊ РЅР°РІРёРіР°С†РёСЋ Рє: {route}?", "Р”Р°", "РџСЂРѕРїСѓСЃС‚РёС‚СЊ");
+
+                if (result)
+                {
+                    await Shell.Current.GoToAsync(route);
+                    await DisplayAlert("РЈСЃРїРµС…", $"РќР°РІРёРіР°С†РёСЏ Рє {route} СѓСЃРїРµС€РЅР°!", "OK");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("РћС€РёР±РєР°", $"РќР°РІРёРіР°С†РёСЏ Рє {route} РЅРµ СѓРґР°Р»Р°СЃСЊ: {ex.Message}", "OK");
+            }
+        }
+    }
+
+    private async Task ShowDistrictSelectionDialog()
+    {
+        var districts = _districts.Values.ToArray();
+        var selectedDistrict = await DisplayActionSheet("Р’С‹Р±РµСЂРёС‚Рµ СЂР°Р№РѕРЅ", "РћС‚РјРµРЅР°", null, districts);
+
+        if (selectedDistrict != null && selectedDistrict != "РћС‚РјРµРЅР°")
+        {
+            _selectedDistrict = _districts.FirstOrDefault(x => x.Value == selectedDistrict).Key;
+            Debug.WriteLine($"Р’С‹Р±СЂР°РЅ СЂР°Р№РѕРЅ: {selectedDistrict}, РєР»СЋС‡: {_selectedDistrict}");
+
+            var placesInDistrict = _allPlacesInfo.Where(p => p.District == _selectedDistrict).ToList();
+            Debug.WriteLine($"Р’ СЂР°Р№РѕРЅРµ {_selectedDistrict} РЅР°Р№РґРµРЅРѕ {placesInDistrict.Count} РјРµСЃС‚");
+
+            if (placesInDistrict.Count < 4)
+            {
+                await DisplayAlert("Р’РЅРёРјР°РЅРёРµ", $"Р’ СЂР°Р№РѕРЅРµ {selectedDistrict} РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РјРµСЃС‚ РґР»СЏ РїРѕСЃС‚СЂРѕРµРЅРёСЏ РјР°СЂС€СЂСѓС‚Р°. Р’С‹Р±РµСЂРёС‚Рµ РґСЂСѓРіРѕР№ СЂР°Р№РѕРЅ.", "OK");
+                return;
+            }
+
+            if (_selectedDistrict != null)
+            {
+                _predefinedPoints = null;
+                _predefinedNames = null;
+
+                Device.BeginInvokeOnMainThread(() => {
+                    RouteInfoLabel.Text = $"Р’С‹Р±СЂР°РЅ СЂР°Р№РѕРЅ: {selectedDistrict}";
+                    RouteInfoLabel.TextColor = Colors.Black;
+                    RouteDistanceLabel.IsVisible = false;
+                    RouteDurationLabel.IsVisible = false;
+                });
+
+                UpdateButtonsState();
+                GenerateRandomRoute();
+            }
+        }
+    }
+
+    private void UpdateButtonsState()
+    {
+        BuildRouteButton.IsVisible = _selectedDistrict != null;
+
+        if (_selectedDistrict != null)
+        {
+            RandomRouteButton.Text = $"РЎР»СѓС‡Р°Р№РЅС‹Р№ РјР°СЂС€СЂСѓС‚ РїРѕ СЂР°Р№РѕРЅСѓ";
+        }
+        else
+        {
+            RandomRouteButton.Text = "РЎР»СѓС‡Р°Р№РЅС‹Р№ РјР°СЂС€СЂСѓС‚";
+        }
+    }
+
     private void GenerateRandomRoute()
     {
-        // Выбираем 4 случайные точки из 10 доступных
-        var indices = GetRandomIndices(0, _allPoints.Length, 4);
-
-        _predefinedPoints = indices.Select(i => _allPoints[i]).ToArray();
-        _predefinedNames = indices.Select(i => _allNames[i]).ToArray();
-
-        Debug.WriteLine($"Сгенерирован новый случайный маршрут: {string.Join(" ? ", _predefinedNames)}");
-    }
-
-    // Метод для получения случайных индексов без повторений
-    private List<int> GetRandomIndices(int min, int max, int count)
-    {
-        var indices = new List<int>();
-        var possibleIndices = Enumerable.Range(min, max - min).ToList();
-
-        for (int i = 0; i < count && possibleIndices.Count > 0; i++)
+        if (_selectedDistrict == null)
         {
-            int index = _random.Next(0, possibleIndices.Count);
-            indices.Add(possibleIndices[index]);
-            possibleIndices.RemoveAt(index);
+            Device.BeginInvokeOnMainThread(async () => {
+                await DisplayAlert("Р’РЅРёРјР°РЅРёРµ", "РџРѕР¶Р°Р»СѓР№СЃС‚Р°, СЃРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРёС‚Рµ СЂР°Р№РѕРЅ", "OK");
+            });
+            return;
         }
 
-        return indices;
+        Debug.WriteLine($"Р“РµРЅРµСЂР°С†РёСЏ РјР°СЂС€СЂСѓС‚Р° РґР»СЏ СЂР°Р№РѕРЅР°: {_selectedDistrict}");
+
+        var availablePlaces = _allPlacesInfo.Where(p => p.District == _selectedDistrict).ToList();
+        Debug.WriteLine($"РќР°Р№РґРµРЅРѕ {availablePlaces.Count} РјРµСЃС‚ РІ СЂР°Р№РѕРЅРµ {_selectedDistrict}");
+
+        if (availablePlaces.Count < 4)
+        {
+            Device.BeginInvokeOnMainThread(async () => {
+                await DisplayAlert("Р’РЅРёРјР°РЅРёРµ", "Р’ РІС‹Р±СЂР°РЅРЅРѕРј СЂР°Р№РѕРЅРµ РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РјРµСЃС‚ РґР»СЏ РїРѕСЃС‚СЂРѕРµРЅРёСЏ РјР°СЂС€СЂСѓС‚Р°. Р’С‹Р±РµСЂРёС‚Рµ РґСЂСѓРіРѕР№ СЂР°Р№РѕРЅ.", "OK");
+            });
+            return;
+        }
+
+        var selectedPlaces = GetRandomPlaces(availablePlaces, 4);
+        _predefinedPoints = selectedPlaces.Select(p => p.Coordinates).ToArray();
+        _predefinedNames = selectedPlaces.Select(p => p.Name).ToArray();
+
+        Debug.WriteLine($"РЎРіРµРЅРµСЂРёСЂРѕРІР°РЅ РЅРѕРІС‹Р№ СЃР»СѓС‡Р°Р№РЅС‹Р№ РјР°СЂС€СЂСѓС‚ РІ СЂР°Р№РѕРЅРµ {_selectedDistrict}: {string.Join(" в†’ ", _predefinedNames)}");
+
+        Device.BeginInvokeOnMainThread(() => {
+            RouteInfoLabel.Text = $"РњР°СЂС€СЂСѓС‚ РїРѕ СЂР°Р№РѕРЅСѓ: {_districts[_selectedDistrict]}\n{string.Join(" в†’ ", _predefinedNames)}";
+            RouteInfoLabel.TextColor = Colors.Black;
+        });
     }
 
-    // Исправляем метод BuildPredefinedRoute, чтобы использовать случайно выбранные точки
+    private List<PlaceInfo> GetRandomPlaces(List<PlaceInfo> places, int count)
+    {
+        var result = new List<PlaceInfo>();
+        var availablePlaces = new List<PlaceInfo>(places);
+
+        if (availablePlaces.Count < count)
+        {
+            count = availablePlaces.Count;
+        }
+
+        for (int i = 0; i < count && availablePlaces.Count > 0; i++)
+        {
+            int index = _random.Next(0, availablePlaces.Count);
+            var selectedPlace = availablePlaces[index];
+            result.Add(selectedPlace);
+            availablePlaces.RemoveAt(index);
+        }
+
+        return result;
+    }
+
     private async void BuildPredefinedRoute()
     {
         try
         {
-            // Показываем индикатор загрузки
+            if (_selectedDistrict == null)
+            {
+                await DisplayAlert("РћС€РёР±РєР°", "РџРѕР¶Р°Р»СѓР№СЃС‚Р°, СЃРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРёС‚Рµ СЂР°Р№РѕРЅ", "OK");
+                return;
+            }
+
+            if (_predefinedPoints == null || _predefinedPoints.Length == 0)
+            {
+                await DisplayAlert("РћС€РёР±РєР°", "РњР°СЂС€СЂСѓС‚ РЅРµ СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅ. РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РЅР°Р¶РјРёС‚Рµ 'РЎР»СѓС‡Р°Р№РЅС‹Р№ РјР°СЂС€СЂСѓС‚'.", "OK");
+                return;
+            }
+
             LoadingIndicator.IsVisible = true;
             LoadingIndicator.IsRunning = true;
 
-            // Получаем текущее местоположение пользователя
             var currentLocation = await GetCurrentLocationAsync();
-
             List<string> coordinates = new List<string>();
             List<string> names = new List<string>();
 
             if (currentLocation == null)
             {
-                await DisplayAlert("Внимание", "Не удалось определить ваше местоположение. Маршрут будет построен без учета вашего местоположения.", "OK");
-
-                // Строим маршрут только через предопределенные точки
+                await DisplayAlert("Р’РЅРёРјР°РЅРёРµ", "РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ РІР°С€Рµ РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµ. РњР°СЂС€СЂСѓС‚ Р±СѓРґРµС‚ РїРѕСЃС‚СЂРѕРµРЅ Р±РµР· СѓС‡РµС‚Р° РІР°С€РµРіРѕ РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёСЏ.", "OK");
                 coordinates.AddRange(_predefinedPoints);
                 names.AddRange(_predefinedNames);
             }
             else
             {
-                // Добавляем текущее местоположение как первую точку
                 coordinates.Add($"{currentLocation.Latitude.ToString(CultureInfo.InvariantCulture)}, {currentLocation.Longitude.ToString(CultureInfo.InvariantCulture)}");
-                names.Add("Ваше местоположение");
-
-                // Добавляем предопределенные точки
+                names.Add("Р’Р°С€Рµ РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµ");
                 coordinates.AddRange(_predefinedPoints);
                 names.AddRange(_predefinedNames);
             }
 
-            // Объединяем координаты и названия в строки с разделителем |
             var routeCoordsString = string.Join("|", coordinates);
             var routeNamesString = string.Join("|", names);
 
-            // Строим маршрут
             LoadMapWithRoute(routeCoordsString, routeNamesString);
-
-            // Обновляем информацию о маршруте на странице
             UpdateRouteDestinations(_predefinedNames);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Ошибка при построении предопределенного маршрута: {ex.Message}");
-            await DisplayAlert("Ошибка", "Не удалось построить маршрут", "OK");
+            Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё РїРѕСЃС‚СЂРѕРµРЅРёРё РїСЂРµРґРѕРїСЂРµРґРµР»РµРЅРЅРѕРіРѕ РјР°СЂС€СЂСѓС‚Р°: {ex.Message}");
+            await DisplayAlert("РћС€РёР±РєР°", "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕСЃС‚СЂРѕРёС‚СЊ РјР°СЂС€СЂСѓС‚", "OK");
             LoadingIndicator.IsVisible = false;
             LoadingIndicator.IsRunning = false;
         }
     }
 
-    // Полностью заменяем метод UpdateRouteDestinations, чтобы использовать только RouteInfoLabel
     private void UpdateRouteDestinations(string[] destinations)
     {
         Device.BeginInvokeOnMainThread(() => {
-            // Используем только RouteInfoLabel вместо DestinationsLabel
-            RouteInfoLabel.Text = $"Маршрут: {string.Join(" ? ", destinations)}";
+            RouteInfoLabel.Text = $"РњР°СЂС€СЂСѓС‚: {string.Join(" в†’ ", destinations)}";
             RouteInfoLabel.TextColor = Colors.Black;
         });
     }
@@ -181,56 +641,32 @@ public partial class YandexMapPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-
-        // Запрашиваем разрешение на использование геолокации
         _isLocationPermissionGranted = await RequestLocationPermissionAsync();
 
         try
         {
-            // Получаем параметры через Query
             var route = Shell.Current.CurrentState.Location.ToString();
-            Debug.WriteLine($"Текущий маршрут: {route}");
+            Debug.WriteLine($"РўРµРєСѓС‰РёР№ РјР°СЂС€СЂСѓС‚: {route}");
 
             var queryStart = route.IndexOf('?');
-
             if (queryStart > 0)
             {
                 var query = route.Substring(queryStart + 1);
-                Debug.WriteLine($"Параметры запроса: {query}");
-
                 var parameters = ParseQueryParameters(query);
-
-                foreach (var param in parameters)
-                {
-                    Debug.WriteLine($"Параметр: {param.Key} = {param.Value}");
-                }
 
                 if (parameters.TryGetValue("coords", out var coords) &&
                     parameters.TryGetValue("names", out var names))
                 {
-                    Debug.WriteLine($"Координаты: {coords}");
-                    Debug.WriteLine($"Названия: {names}");
-
                     LoadMapWithRoute(coords, names);
                     return;
                 }
-                else
-                {
-                    Debug.WriteLine("Не найдены параметры coords или names");
-                }
-            }
-            else
-            {
-                Debug.WriteLine("Не найден символ '?' в URL");
             }
 
-            // Если не удалось загрузить маршрут, загружаем карту с текущим местоположением
             await LoadMapWithCurrentLocationAsync();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Ошибка в OnAppearing: {ex.Message}");
-            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            Debug.WriteLine($"РћС€РёР±РєР° РІ OnAppearing: {ex.Message}");
             await LoadMapWithCurrentLocationAsync();
         }
     }
@@ -240,17 +676,15 @@ public partial class YandexMapPage : ContentPage
         try
         {
             var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-
             if (status != PermissionStatus.Granted)
             {
                 status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             }
-
             return status == PermissionStatus.Granted;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Ошибка при запросе разрешения на геолокацию: {ex.Message}");
+            Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё Р·Р°РїСЂРѕСЃРµ СЂР°Р·СЂРµС€РµРЅРёСЏ РЅР° РіРµРѕР»РѕРєР°С†РёСЋ: {ex.Message}");
             return false;
         }
     }
@@ -261,7 +695,7 @@ public partial class YandexMapPage : ContentPage
         {
             if (!_isLocationPermissionGranted)
             {
-                Debug.WriteLine("Нет разрешения на использование геолокации");
+                Debug.WriteLine("РќРµС‚ СЂР°Р·СЂРµС€РµРЅРёСЏ РЅР° РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РіРµРѕР»РѕРєР°С†РёРё");
                 return null;
             }
 
@@ -270,16 +704,16 @@ public partial class YandexMapPage : ContentPage
 
             if (location != null)
             {
-                Debug.WriteLine($"Текущие координаты: {location.Latitude}, {location.Longitude}, Точность: {location.Accuracy} метров");
+                Debug.WriteLine($"РўРµРєСѓС‰РёРµ РєРѕРѕСЂРґРёРЅР°С‚С‹: {location.Latitude}, {location.Longitude}, РўРѕС‡РЅРѕСЃС‚СЊ: {location.Accuracy} РјРµС‚СЂРѕРІ");
                 return location;
             }
 
-            Debug.WriteLine("Не удалось получить текущее местоположение");
+            Debug.WriteLine("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ С‚РµРєСѓС‰РµРµ РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµ");
             return null;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Ошибка при получении текущего местоположения: {ex.Message}");
+            Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё РїРѕР»СѓС‡РµРЅРёРё С‚РµРєСѓС‰РµРіРѕ РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёСЏ: {ex.Message}");
             return null;
         }
     }
@@ -301,7 +735,6 @@ public partial class YandexMapPage : ContentPage
         return parameters;
     }
 
-    // Обновляем метод GenerateRouteHtml, чтобы правильно отображать маркер текущего местоположения
     private string GenerateRouteHtml(string[] coordinates, string[] placeNames)
     {
         var sb = new StringBuilder();
@@ -311,11 +744,10 @@ public partial class YandexMapPage : ContentPage
         <head>
             <meta charset=""utf-8"">
             <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"">
-            <title>Маршрут</title>
+            <title>РњР°СЂС€СЂСѓС‚</title>
             <script src=""https://api-maps.yandex.ru/2.1/?apikey=");
 
         sb.Append(_apiKey);
-
         sb.Append(@"&lang=ru_RU"" type=""text/javascript""></script>
             <style>
                 html, body, #map {
@@ -324,396 +756,68 @@ public partial class YandexMapPage : ContentPage
                     padding: 0; 
                     margin: 0;
                 }
-                .error-message {
-                    position: absolute;
-                    top: 10px;
-                    left: 10px;
-                    background: white;
-                    padding: 10px;
-                    border-radius: 5px;
-                    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-                    z-index: 1000;
-                    display: none;
-                }
-                .accuracy-circle {
-                    stroke: #4285F4;
-                    stroke-opacity: 0.6;
-                    stroke-width: 1;
-                    fill: #4285F4;
-                    fill-opacity: 0.2;
-                }
-                .location-button {
-                    position: absolute;
-                    bottom: 20px;
-                    right: 20px;
-                    background: white;
-                    border: none;
-                    border-radius: 50%;
-                    width: 50px;
-                    height: 50px;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                    cursor: pointer;
-                    z-index: 1000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .location-button:focus {
-                    outline: none;
-                }
             </style>
         </head>
         <body>
             <div id=""map""></div>
-            <div id=""error-message"" class=""error-message""></div>
-            <button id=""location-button"" class=""location-button"" title=""Моё местоположение"">
-                <svg width=""24"" height=""24"" viewBox=""0 0 24 24"" fill=""none"" xmlns=""http://www.w3.org/2000/svg"">
-                    <path d=""M12 8C9.79 8 8 9.79 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 9.79 14.21 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z"" fill=""#4285F4""/>
-                </svg>
-            </button>
             <script>
-                // Функция для отображения ошибок
-                function showError(message) {
-                    var errorDiv = document.getElementById('error-message');
-                    errorDiv.textContent = message;
-                    errorDiv.style.display = 'block';
-                    console.error(message);
-                }
-
-                // Обработка глобальных ошибок JavaScript
-                window.onerror = function(message, source, lineno, colno, error) {
-                    showError('JavaScript error: ' + message);
-                    return true;
-                };
-
-                try {
-                    ymaps.ready(init);
-                } catch (e) {
-                    showError('Error loading Yandex Maps: ' + e.message);
-                }
-                
-                function init() {
-                    try {
-                        console.log('Initializing map...');
-                        
-                        // Проверяем координаты
-                        var firstCoord = [");
-
-        sb.Append(coordinates[0]);
-
-        sb.Append(@"];
-                        console.log('First coordinate:', firstCoord);
-                        
-                        var map = new ymaps.Map('map', {
-                            center: firstCoord,
-                            zoom: 16,
-                            controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
-                        });
-                        
-                        // Создаем массив точек маршрута
-                        var routePoints = [");
+                ymaps.ready(function() {
+                    var coordinates = [");
 
         for (int i = 0; i < coordinates.Length; i++)
         {
-            if (i > 0) sb.Append(",");
-            sb.Append($"'{coordinates[i]}'");
+            var coords = coordinates[i].Split(',');
+            if (coords.Length == 2 &&
+                double.TryParse(coords[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var lat) &&
+                double.TryParse(coords[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var lng))
+            {
+                sb.Append($"[{lat.ToString(CultureInfo.InvariantCulture)}, {lng.ToString(CultureInfo.InvariantCulture)}]");
+                if (i < coordinates.Length - 1) sb.Append(", ");
+            }
         }
 
         sb.Append(@"];
-                        console.log('Route points:', routePoints);
-                        
-                        // Создаем мультимаршрут
+                    var placeNames = [");
+
+        for (int i = 0; i < placeNames.Length; i++)
+        {
+            sb.Append($"'{placeNames[i].Replace("'", "\\'")}' ");
+            if (i < placeNames.Length - 1) sb.Append(", ");
+        }
+
+        sb.Append(@"];
+                    
+                    var map = new ymaps.Map('map', {
+                        center: coordinates[0],
+                        zoom: 12,
+                        controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
+                    });
+                    
+                    for (var i = 0; i < coordinates.length; i++) {
+                        var placemark = new ymaps.Placemark(coordinates[i], {
+                            hintContent: placeNames[i],
+                            balloonContent: placeNames[i]
+                        }, {
+                            preset: i === 0 ? 'islands#redIcon' : 'islands#blueIcon'
+                        });
+                        map.geoObjects.add(placemark);
+                    }
+                    
+                    if (coordinates.length > 1) {
                         var multiRoute = new ymaps.multiRouter.MultiRoute({
-                            referencePoints: routePoints,
+                            referencePoints: coordinates,
                             params: {
-                                // Тип маршрутизации - пешеходная маршрутизация
-                                routingMode: 'pedestrian',
-                                // Включаем режим отображения только выбранного маршрута
-                                results: 1
+                                routingMode: 'pedestrian'
                             }
                         }, {
-                            // Автоматически устанавливать границы карты так, чтобы маршрут был виден целиком
                             boundsAutoApply: true,
-                            // Внешний вид линий маршрута
                             routeActiveStrokeWidth: 6,
-                            routeActiveStrokeColor: '#1E90FF'
+                            routeActiveStrokeColor: '#fa6600'
                         });
                         
-                        // Добавляем мультимаршрут на карту
                         map.geoObjects.add(multiRoute);
-                        
-                        // Подписываемся на событие готовности маршрута
-                        multiRoute.model.events.add('requestsuccess', function() {
-                            console.log('Route built successfully');
-                            
-                            // Получаем информацию о маршруте
-                            var activeRoute = multiRoute.getActiveRoute();
-                            if (activeRoute) {
-                                var length = activeRoute.properties.get('distance').text;
-                                var duration = activeRoute.properties.get('duration').text;
-                                
-                                console.log('Route length:', length);
-                                console.log('Route duration:', duration);
-                                
-                                // Отправляем информацию о маршруте в приложение через window.location
-                                try {
-                                    window.location.href = 'js://routeInfo?length=' + encodeURIComponent(length) + '&duration=' + encodeURIComponent(duration);
-                                } catch (e) {
-                                    console.log('Failed to send route info to app:', e);
-                                }
-                                
-                                // Обновляем информацию о маршруте на странице
-                                var routeInfoDiv = document.createElement('div');
-                                routeInfoDiv.style.position = 'absolute';
-                                routeInfoDiv.style.bottom = '80px';
-                                routeInfoDiv.style.left = '10px';
-                                routeInfoDiv.style.backgroundColor = 'white';
-                                routeInfoDiv.style.padding = '10px';
-                                routeInfoDiv.style.borderRadius = '5px';
-                                routeInfoDiv.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
-                                routeInfoDiv.style.zIndex = '1000';
-                                routeInfoDiv.innerHTML = '<strong>Длина маршрута:</strong> ' + length + '<br><strong>Время в пути:</strong> ' + duration;
-                                document.body.appendChild(routeInfoDiv);
-                            }
-                        });
-                        
-                        // Подписываемся на событие ошибки при построении маршрута
-                        multiRoute.model.events.add('requestfail', function(event) {
-                            var error = event.get('error');
-                            showError('Error building route: ' + (error ? error.message : 'Unknown error'));
-                        });
-                        
-                        // Добавляем метки
-                        var placemarks = [");
-
-        for (int i = 0; i < coordinates.Length; i++)
-        {
-            if (i > 0) sb.Append(",");
-            var name = i < placeNames.Length ? placeNames[i] : $"Точка {i + 1}";
-
-            // Определяем цвет метки: зеленый для текущего местоположения, красный для последней точки, синий для остальных
-            string color;
-            if (i == 0)
-                color = "'#00FF00'"; // Зеленый для текущего местоположения
-            else if (i == coordinates.Length - 1)
-                color = "'#FF0000'"; // Красный для последней точки
-            else
-                color = "'#1E90FF'"; // Синий для промежуточных точек
-
-            sb.Append($@"
-                            {{
-                                coords: [{coordinates[i]}],
-                                title: '{name.Replace("'", "\\'")}',
-                                number: {i + 1},
-                                color: {color}
-                            }}");
-        }
-
-        sb.Append(@"
-                        ];
-                        
-                        // Добавляем метки на карту
-                        placemarks.forEach(function(point) {
-                            try {
-                                var placemark = new ymaps.Placemark(point.coords, {
-                                    hintContent: point.title,
-                                    balloonContent: point.number + '. ' + point.title
-                                }, {
-                                    preset: 'islands#' + point.color + 'CircleDotIconWithCaption',
-                                    iconColor: point.color
-                                });
-                                
-                                map.geoObjects.add(placemark);
-                            } catch (e) {
-                                showError('Error adding placemark: ' + e.message);
-                            }
-                        });
-                        
-                        // Добавляем элементы управления
-                        map.controls.add(new ymaps.control.RouteButton({
-                            options: {
-                                float: 'right',
-                                floatIndex: 100
-                            }
-                        }));
-                        
-                        // Добавляем кнопку определения местоположения
-                        var geolocationControl = new ymaps.control.GeolocationControl({
-                            options: {
-                                float: 'left',
-                                floatIndex: 100,
-                                noPlacemark: false
-                            }
-                        });
-                        map.controls.add(geolocationControl);
-                        
-                        // Добавляем кнопку для изменения типа маршрута
-                        var routeTypeButton = new ymaps.control.Button({
-                            data: {
-                                content: 'Тип маршрута',
-                                title: 'Изменить тип маршрута'
-                            },
-                            options: {
-                                selectOnClick: false,
-                                maxWidth: 150
-                            }
-                        });
-                        
-                        routeTypeButton.events.add('click', function() {
-                            var items = [
-                                {
-                                    data: {
-                                        content: 'Пешком',
-                                        value: 'pedestrian'
-                                    }
-                                },
-                                {
-                                    data: {
-                                        content: 'На машине',
-                                        value: 'auto'
-                                    }
-                                },
-                                {
-                                    data: {
-                                        content: 'Общественный транспорт',
-                                        value: 'masstransit'
-                                    }
-                                }
-                            ];
-                            
-                            var routeTypeMenu = new ymaps.control.ListBox({
-                                data: {
-                                    content: 'Тип маршрута'
-                                },
-                                items: items,
-                                options: {
-                                    position: {
-                                        top: 60,
-                                        right: 10
-                                    }
-                                }
-                            });
-                            
-                            map.controls.add(routeTypeMenu);
-                            
-                            routeTypeMenu.events.add('click', function(e) {
-                                var item = e.get('target');
-                                if (item) {
-                                    var routingMode = item.data.get('value');
-                                    
-                                    // Удаляем старый маршрут
-                                    map.geoObjects.remove(multiRoute);
-                                    
-                                    // Создаем новый маршрут с выбранным типом
-                                    multiRoute = new ymaps.multiRouter.MultiRoute({
-                                        referencePoints: routePoints,
-                                        params: {
-                                            routingMode: routingMode,
-                                            results: 1
-                                        }
-                                    }, {
-                                        boundsAutoApply: true,
-                                        routeActiveStrokeWidth: 6,
-                                        routeActiveStrokeColor: '#1E90FF'
-                                    });
-                                    
-                                    // Добавляем новый маршрут на карту
-                                    map.geoObjects.add(multiRoute);
-                                    
-                                    // Удаляем меню после выбора
-                                    map.controls.remove(routeTypeMenu);
-                                }
-                            });
-                        });
-                        
-                        map.controls.add(routeTypeButton, {
-                            float: 'right',
-                            floatIndex: 100
-                        });
-                        
-                        // Добавляем обработчик для кнопки местоположения
-                        document.getElementById('location-button').addEventListener('click', function() {
-                            console.log('Location button clicked');
-                            if (navigator.geolocation) {
-                                console.log('Geolocation API is available');
-                                navigator.geolocation.getCurrentPosition(
-                                    function(position) {
-                                        console.log('Position received:', position.coords.latitude, position.coords.longitude);
-                                        var userLocation = [position.coords.latitude, position.coords.longitude];
-                                        var accuracy = position.coords.accuracy;
-                                        
-                                        // Удаляем предыдущие объекты местоположения, если они есть
-                                        if (window.userLocationPlacemark) {
-                                            map.geoObjects.remove(window.userLocationPlacemark);
-                                        }
-                                        if (window.accuracyCircle) {
-                                            map.geoObjects.remove(window.accuracyCircle);
-                                        }
-                                        
-                                        // Создаем метку текущего местоположения
-                                        window.userLocationPlacemark = new ymaps.Placemark(userLocation, {
-                                            hintContent: 'Ваше местоположение',
-                                            balloonContent: 'Вы находитесь здесь<br>Точность: ' + Math.round(accuracy) + ' м'
-                                        }, {
-                                            preset: 'islands#geolocationIcon',
-                                            iconColor: '#4285F4'
-                                        });
-                                        
-                                        // Создаем круг, показывающий точность определения местоположения
-                                        window.accuracyCircle = new ymaps.Circle([userLocation, accuracy], {
-                                            hintContent: 'Точность: ' + Math.round(accuracy) + ' м'
-                                        }, {
-                                            draggable: false,
-                                            fillColor: '#4285F4',
-                                            fillOpacity: 0.2,
-                                            strokeColor: '#4285F4',
-                                            strokeOpacity: 0.6,
-                                            strokeWidth: 1
-                                        });
-                                        
-                                        // Добавляем объекты на карту
-                                        map.geoObjects.add(window.userLocationPlacemark);
-                                        map.geoObjects.add(window.accuracyCircle);
-                                        
-                                        // Центрируем карту на местоположении пользователя
-                                        map.setCenter(userLocation, 16, {
-                                            duration: 500
-                                        });
-                                    },
-                                    function(error) {
-                                        console.error('Geolocation error:', error.code, error.message);
-                                        var errorMessage = '';
-                                        switch(error.code) {
-                                            case error.PERMISSION_DENIED:
-                                                errorMessage = 'Пользователь отказал в доступе к геолокации';
-                                                break;
-                                            case error.POSITION_UNAVAILABLE:
-                                                errorMessage = 'Информация о местоположении недоступна';
-                                                break;
-                                            case error.TIMEOUT:
-                                                errorMessage = 'Истекло время ожидания запроса местоположения';
-                                                break;
-                                            case error.UNKNOWN_ERROR:
-                                                errorMessage = 'Произошла неизвестная ошибка';
-                                                break;
-                                        }
-                                        showError('Ошибка геолокации: ' + errorMessage);
-                                    },
-                                    {
-                                        enableHighAccuracy: true,
-                                        timeout: 10000,
-                                        maximumAge: 0
-                                    }
-                                );
-                            } else {
-                                showError('Геолокация не поддерживается вашим браузером');
-                            }
-                        });
-                        
-                    } catch (e) {
-                        showError('Error in init function: ' + e.message);
                     }
-                }
+                });
             </script>
         </body>
         </html>");
@@ -721,657 +825,142 @@ public partial class YandexMapPage : ContentPage
         return sb.ToString();
     }
 
-    private string GenerateCurrentLocationHtml(double latitude, double longitude, double accuracy)
-    {
-        var sb = new StringBuilder();
-        sb.Append(@"
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset=""utf-8"">
-                <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"">
-                <title>Моё местоположение</title>
-                <script src=""https://api-maps.yandex.ru/2.1/?apikey=");
-
-        sb.Append(_apiKey);
-
-        sb.Append(@"&lang=ru_RU"" type=""text/javascript""></script>
-                <style>
-                    html, body, #map {
-                        width: 100%; 
-                        height: 100%; 
-                        padding: 0; 
-                        margin: 0;
-                    }
-                    .error-message {
-                        position: absolute;
-                        top: 10px;
-                        left: 10px;
-                        background: white;
-                        padding: 10px;
-                        border-radius: 5px;
-                        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-                        z-index: 1000;
-                        display: none;
-                    }
-                    .accuracy-circle {
-                        stroke: #4285F4;
-                        stroke-opacity: 0.6;
-                        stroke-width: 1;
-                        fill: #4285F4;
-                        fill-opacity: 0.2;
-                    }
-                    .location-button {
-                        position: absolute;
-                        bottom: 20px;
-                        right: 20px;
-                        background: white;
-                        border: none;
-                        border-radius: 50%;
-                        width: 50px;
-                        height: 50px;
-                        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                        cursor: pointer;
-                        z-index: 1000;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                    .location-button:focus {
-                        outline: none;
-                    }
-                </style>
-            </head>
-            <body>
-                <div id=""map""></div>
-                <div id=""error-message"" class=""error-message""></div>
-                <button id=""location-button"" class=""location-button"" title=""Моё местоположение"">
-                    <svg width=""24"" height=""24"" viewBox=""0 0 24 24"" fill=""none"" xmlns=""http://www.w3.org/2000/svg"">
-                        <path d=""M12 8C9.79 8 8 9.79 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 9.79 14.21 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z"" fill=""#4285F4""/>
-                    </svg>
-                </button>
-                <script>
-                    // Функция для отображения ошибок
-                    function showError(message) {
-                        var errorDiv = document.getElementById('error-message');
-                        errorDiv.textContent = message;
-                        errorDiv.style.display = 'block';
-                        console.error(message);
-                    }
-
-                    // Обработка глобальных ошибок JavaScript
-                    window.onerror = function(message, source, lineno, colno, error) {
-                        showError('JavaScript error: ' + message);
-                        return true;
-                    };
-
-                    try {
-                        ymaps.ready(init);
-                    } catch (e) {
-                        showError('Error loading Yandex Maps: ' + e.message);
-                    }
-                    
-                    function init() {
-                        try {
-                            console.log('Initializing map with current location...');
-                            
-                            // Координаты текущего местоположения
-                            var userLocation = [");
-
-        sb.Append($"{latitude.ToString(CultureInfo.InvariantCulture)}, {longitude.ToString(CultureInfo.InvariantCulture)}");
-
-        sb.Append(@"];
-                            var accuracy = ");
-
-        sb.Append(accuracy.ToString(CultureInfo.InvariantCulture));
-
-        sb.Append(@";
-                            
-                            console.log('Initial location:', userLocation, 'Accuracy:', accuracy);
-                            
-                            var map = new ymaps.Map('map', {
-                                center: userLocation,
-                                zoom: 16,
-                                controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
-                            });
-                            
-                            // Создаем метку текущего местоположения
-                            var userLocationPlacemark = new ymaps.Placemark(userLocation, {
-                                hintContent: 'Ваше местоположение',
-                                balloonContent: 'Вы находитесь здесь<br>Точность: ' + Math.round(accuracy) + ' м'
-                            }, {
-                                preset: 'islands#geolocationIcon',
-                                iconColor: '#4285F4'
-                            });
-                            
-                            // Создаем круг, показывающий точность определения местоположения
-                            var accuracyCircle = new ymaps.Circle([userLocation, accuracy], {
-                                hintContent: 'Точность: ' + Math.round(accuracy) + ' м'
-                            }, {
-                                draggable: false,
-                                fillColor: '#4285F4',
-                                fillOpacity: 0.2,
-                                strokeColor: '#4285F4',
-                                strokeOpacity: 0.6,
-                                strokeWidth: 1
-                            });
-                            
-                            // Добавляем объекты на карту
-                            map.geoObjects.add(userLocationPlacemark);
-                            map.geoObjects.add(accuracyCircle);
-                            
-                            // Добавляем кнопку определения местоположения
-                            var geolocationControl = new ymaps.control.GeolocationControl({
-                                options: {
-                                    float: 'left',
-                                    floatIndex: 100,
-                                    noPlacemark: true
-                                }
-                            });
-                            map.controls.add(geolocationControl);
-                            
-                            // Добавляем обработчик для кнопки местоположения
-                            document.getElementById('location-button').addEventListener('click', function() {
-                                console.log('Location button clicked');
-                                if (navigator.geolocation) {
-                                    console.log('Geolocation API is available');
-                                    navigator.geolocation.getCurrentPosition(
-                                        function(position) {
-                                            console.log('Position received:', position.coords.latitude, position.coords.longitude);
-                                            var newUserLocation = [position.coords.latitude, position.coords.longitude];
-                                            var newAccuracy = position.coords.accuracy;
-                                            
-                                            // Удаляем предыдущие объекты
-                                            map.geoObjects.remove(userLocationPlacemark);
-                                            map.geoObjects.remove(accuracyCircle);
-                                            
-                                            // Создаем новую метку
-                                            userLocationPlacemark = new ymaps.Placemark(newUserLocation, {
-                                                hintContent: 'Ваше местоположение',
-                                                balloonContent: 'Вы находитесь здесь<br>Точность: ' + Math.round(newAccuracy) + ' м'
-                                            }, {
-                                                preset: 'islands#geolocationIcon',
-                                                iconColor: '#4285F4'
-                                            });
-                                            
-                                            // Создаем новый круг точности
-                                            accuracyCircle = new ymaps.Circle([newUserLocation, newAccuracy], {
-                                                hintContent: 'Точность: ' + Math.round(newAccuracy) + ' м'
-                                            }, {
-                                                draggable: false,
-                                                fillColor: '#4285F4',
-                                                fillOpacity: 0.2,
-                                                strokeColor: '#4285F4',
-                                                strokeOpacity: 0.6,
-                                                strokeWidth: 1
-                                            });
-                                            
-                                            // Добавляем объекты на карту
-                                            map.geoObjects.add(userLocationPlacemark);
-                                            map.geoObjects.add(accuracyCircle);
-                                            
-                                            // Центрируем карту на новом местоположении
-                                            map.setCenter(newUserLocation, 16, {
-                                                duration: 500
-                                            });
-                                        },
-                                        function(error) {
-                                            console.error('Geolocation error:', error.code, error.message);
-                                            var errorMessage = '';
-                                            switch(error.code) {
-                                                case error.PERMISSION_DENIED:
-                                                    errorMessage = 'Пользователь отказал в доступе к геолокации';
-                                                break;
-                                                case error.POSITION_UNAVAILABLE:
-                                                    errorMessage = 'Информация о местоположении недоступна';
-                                                break;
-                                                case error.TIMEOUT:
-                                                    errorMessage = 'Истекло время ожидания запроса местоположения';
-                                                break;
-                                                case error.UNKNOWN_ERROR:
-                                                    errorMessage = 'Произошла неизвестная ошибка';
-                                                break;
-                                            }
-                                            showError('Ошибка геолокации: ' + errorMessage);
-                                        },
-                                        {
-                                            enableHighAccuracy: true,
-                                            timeout: 10000,
-                                            maximumAge: 0
-                                        }
-                                    );
-                                } else {
-                                    showError('Геолокация не поддерживается вашим браузером');
-                                }
-                            });
-                            
-                            // Запускаем отслеживание местоположения
-                            startLocationTracking(map, userLocationPlacemark, accuracyCircle);
-                            
-                        } catch (e) {
-                            showError('Error in init function: ' + e.message);
-                        }
-                    }
-                    
-                    // Функция для отслеживания местоположения в реальном времени
-                    function startLocationTracking(map, placemark, circle) {
-                        if (navigator.geolocation) {
-                            var watchId = navigator.geolocation.watchPosition(
-                                function(position) {
-                                    var newUserLocation = [position.coords.latitude, position.coords.longitude];
-                                    var newAccuracy = position.coords.accuracy;
-                                    
-                                    // Обновляем геометрию круга точности
-                                    circle.geometry.setRadius(newAccuracy);
-                                    circle.geometry.setCoordinates(newUserLocation);
-                                    
-                                    // Обновляем позицию метки
-                                    placemark.geometry.setCoordinates(newUserLocation);
-                                    
-                                    // Обновляем содержимое балуна
-                                    placemark.properties.set('balloonContent', 'Вы находитесь здесь<br>Точность: ' + Math.round(newAccuracy) + ' м');
-                                    
-                                    // Центрируем карту, если точность улучшилась значительно
-                                    if (window.lastAccuracy && window.lastAccuracy > newAccuracy * 1.5) {
-                                        map.setCenter(newUserLocation, 16, {
-                                            duration: 500
-                                        });
-                                    }
-                                    
-                                    window.lastAccuracy = newAccuracy;
-                                },
-                                function(error) {
-                                    console.error('Ошибка отслеживания местоположения:', error.message);
-                                },
-                                {
-                                    enableHighAccuracy: true,
-                                    timeout: 10000,
-                                    maximumAge: 0
-                                }
-                            );
-                            
-                            // Сохраняем ID для возможности остановки отслеживания
-                            window.locationWatchId = watchId;
-                        }
-                    }
-                </script>
-            </body>
-            </html>");
-
-        return sb.ToString();
-    }
-
     private void LoadDefaultMap()
     {
-        var html = @"
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset=""utf-8"">
-                <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"">
-                <title>Яндекс Карты</title>
-                <script src=""https://api-maps.yandex.ru/2.1/?apikey=" + _apiKey + @"&lang=ru_RU"" type=""text/javascript""></script>
-                <style>
-                    html, body, #map {
-                        width: 100%; 
-                        height: 100%; 
-                        padding: 0; 
-                        margin: 0;
-                    }
-                    .error-message {
-                        position: absolute;
-                        top: 10px;
-                        left: 10px;
-                        background: white;
-                        padding: 10px;
-                        border-radius: 5px;
-                        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-                        z-index: 1000;
-                        display: none;
-                    }
-                    .location-button {
-                        position: absolute;
-                        bottom: 20px;
-                        right: 20px;
-                        background: white;
-                        border: none;
-                        border-radius: 50%;
-                        width: 50px;
-                        height: 50px;
-                        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                        cursor: pointer;
-                        z-index: 1000;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                    .location-button:focus {
-                        outline: none;
-                    }
-                </style>
-            </head>
-            <body>
-                <div id=""map""></div>
-                <div id=""error-message"" class=""error-message""></div>
-                <button id=""location-button"" class=""location-button"" title=""Моё местоположение"">
-                    <svg width=""24"" height=""24"" viewBox=""0 0 24 24"" fill=""none"" xmlns=""http://www.w3.org/2000/svg"">
-                        <path d=""M12 8C9.79 8 8 9.79 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 9.79 14.21 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z"" fill=""#4285F4""/>
-                    </svg>
-                </button>
-                <script>
-                    // Функция для отображения ошибок
-                    function showError(message) {
-                        var errorDiv = document.getElementById('error-message');
-                        errorDiv.textContent = message;
-                        errorDiv.style.display = 'block';
-                        console.error(message);
-                    }
-
-                    // Обработка глобальных ошибок JavaScript
-                    window.onerror = function(message, source, lineno, colno, error) {
-                        showError('JavaScript error: ' + message);
-                        return true;
-                    };
-
-                    try {
-                        ymaps.ready(init);
-                    } catch (e) {
-                        showError('Error loading Yandex Maps: ' + e.message);
-                    }
-                    
-                    function init() {
-                        try {
-                            console.log('Initializing default map...');
-                            
-                            var map = new ymaps.Map('map', {
-                                center: [55.751574, 37.573856],
-                                zoom: 10,
-                                controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
-                            });
-                            
-                            // Добавляем кнопку определения местоположения
-                            var geolocationControl = new ymaps.control.GeolocationControl({
-                                options: {
-                                    float: 'left',
-                                    floatIndex: 100,
-                                    noPlacemark: false
-                                }
-                            });
-                            map.controls.add(geolocationControl);
-                            
-                            // Добавляем обработчик для кнопки местоположения
-                            document.getElementById('location-button').addEventListener('click', function() {
-                                console.log('Location button clicked');
-                                if (navigator.geolocation) {
-                                    console.log('Geolocation API is available');
-                                    navigator.geolocation.getCurrentPosition(
-                                        function(position) {
-                                            console.log('Position received:', position.coords.latitude, position.coords.longitude);
-                                            var userLocation = [position.coords.latitude, position.coords.longitude];
-                                            var accuracy = position.coords.accuracy;
-                                            
-                                            // Удаляем предыдущие объекты местоположения, если они есть
-                                            if (window.userLocationPlacemark) {
-                                                map.geoObjects.remove(window.userLocationPlacemark);
-                                            }
-                                            if (window.accuracyCircle) {
-                                                map.geoObjects.remove(window.accuracyCircle);
-                                            }
-                                            
-                                            // Создаем метку текущего местоположения
-                                            window.userLocationPlacemark = new ymaps.Placemark(userLocation, {
-                                                hintContent: 'Ваше местоположение',
-                                                balloonContent: 'Вы находитесь здесь<br>Точность: ' + Math.round(accuracy) + ' м'
-                                            }, {
-                                                preset: 'islands#geolocationIcon',
-                                                iconColor: '#4285F4'
-                                            });
-                                            
-                                            // Создаем круг, показывающий точность определения местоположения
-                                            window.accuracyCircle = new ymaps.Circle([userLocation, accuracy], {
-                                                hintContent: 'Точность: ' + Math.round(accuracy) + ' м'
-                                            }, {
-                                                draggable: false,
-                                                fillColor: '#4285F4',
-                                                fillOpacity: 0.2,
-                                                strokeColor: '#4285F4',
-                                                strokeOpacity: 0.6,
-                                                strokeWidth: 1
-                                            });
-                                            
-                                            // Добавляем объекты на карту
-                                            map.geoObjects.add(window.userLocationPlacemark);
-                                            map.geoObjects.add(window.accuracyCircle);
-                                            
-                                            // Центрируем карту на местоположении пользователя
-                                            map.setCenter(userLocation, 16, {
-                                                duration: 500
-                                            });
-                                            
-                                            // Запускаем отслеживание местоположения
-                                            startLocationTracking(map, window.userLocationPlacemark, window.accuracyCircle);
-                                        },
-                                        function(error) {
-                                            console.error('Geolocation error:', error.code, error.message);
-                                            var errorMessage = '';
-                                            switch(error.code) {
-                                                case error.PERMISSION_DENIED:
-                                                    errorMessage = 'Пользователь отказал в доступе к геолокации';
-                                                break;
-                                                case error.POSITION_UNAVAILABLE:
-                                                    errorMessage = 'Информация о местоположении недоступна';
-                                                break;
-                                                case error.TIMEOUT:
-                                                    errorMessage = 'Истекло время ожидания запроса местоположения';
-                                                break;
-                                                case error.UNKNOWN_ERROR:
-                                                    errorMessage = 'Произошла неизвестная ошибка';
-                                                break;
-                                            }
-                                            showError('Ошибка геолокации: ' + errorMessage);
-                                        },
-                                        {
-                                            enableHighAccuracy: true,
-                                            timeout: 10000,
-                                            maximumAge: 0
-                                        }
-                                    );
-                                } else {
-                                    showError('Геолокация не поддерживается вашим браузером');
-                                }
-                            });
-                            
-                            // Функция для отслеживания местоположения в реальном времени
-                            function startLocationTracking(map, placemark, circle) {
-                                if (navigator.geolocation) {
-                                    var watchId = navigator.geolocation.watchPosition(
-                                        function(position) {
-                                            var newUserLocation = [position.coords.latitude, position.coords.longitude];
-                                            var newAccuracy = position.coords.accuracy;
-                                            
-                                            // Обновляем геометрию круга точности
-                                            circle.geometry.setRadius(newAccuracy);
-                                            circle.geometry.setCoordinates(newUserLocation);
-                                            
-                                            // Обновляем позицию метки
-                                            placemark.geometry.setCoordinates(newUserLocation);
-                                            
-                                            // Обновляем содержимое балуна
-                                            placemark.properties.set('balloonContent', 'Вы находитесь здесь<br>Точность: ' + Math.round(newAccuracy) + ' м');
-                                            
-                                            // Центрируем карту, если точность улучшилась значительно
-                                            if (window.lastAccuracy && window.lastAccuracy > newAccuracy * 1.5) {
-                                                map.setCenter(newUserLocation, 16, {
-                                                    duration: 500
-                                                });
-                                            }
-                                            
-                                            window.lastAccuracy = newAccuracy;
-                                        },
-                                        function(error) {
-                                            console.error('Ошибка отслеживания местоположения:', error.message);
-                                        },
-                                        {
-                                            enableHighAccuracy: true,
-                                            timeout: 10000,
-                                            maximumAge: 0
-                                        }
-                                    );
-                                    
-                                    // Сохраняем ID для возможности остановки отслеживания
-                                    window.locationWatchId = watchId;
-                                }
-                            }
-                            
-                            // Пробуем сразу определить местоположение
-                            geolocationControl.events.add('click', function() {
-                                document.getElementById('location-button').click();
-                            });
-                            
-                            // Автоматически запускаем определение местоположения
-                            setTimeout(function() {
-                                document.getElementById('location-button').click();
-                            }, 1000);
-                            
-                        } catch (e) {
-                            showError('Error in init function: ' + e.message);
-                        }
-                    }
-                </script>
-            </body>
-            </html>";
-
-        MapWebView.Source = new HtmlWebViewSource { Html = html };
+        try
+        {
+            var html = GenerateDefaultMapHtml();
+            MapWebView.Source = new HtmlWebViewSource { Html = html };
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РєР°СЂС‚С‹ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ: {ex.Message}");
+        }
     }
 
-    // Обновляем метод LoadMapWithRoute, чтобы скрывать индикатор загрузки после загрузки карты
+    private string GenerateDefaultMapHtml()
+    {
+        return $@"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset=""utf-8"">
+            <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"">
+            <title>РљР°СЂС‚Р°</title>
+            <script src=""https://api-maps.yandex.ru/2.1/?apikey={_apiKey}&lang=ru_RU"" type=""text/javascript""></script>
+            <style>
+                html, body, #map {{
+                    width: 100%; 
+                    height: 100%; 
+                    padding: 0; 
+                    margin: 0;
+                }}
+            </style>
+        </head>
+        <body>
+            <div id=""map""></div>
+            <script>
+                ymaps.ready(function() {{
+                    var map = new ymaps.Map('map', {{
+                        center: [56.8431, 60.6454],
+                        zoom: 10,
+                        controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
+                    }});
+                }});
+            </script>
+        </body>
+        </html>";
+    }
+
+    private string GenerateCurrentLocationHtml(double latitude, double longitude, double accuracy)
+    {
+        return $@"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset=""utf-8"">
+            <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"">
+            <title>Р’Р°С€Рµ РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµ</title>
+            <script src=""https://api-maps.yandex.ru/2.1/?apikey={_apiKey}&lang=ru_RU"" type=""text/javascript""></script>
+            <style>
+                html, body, #map {{
+                    width: 100%; 
+                    height: 100%; 
+                    padding: 0; 
+                    margin: 0;
+                }}
+            </style>
+        </head>
+        <body>
+            <div id=""map""></div>
+            <script>
+                ymaps.ready(function() {{
+                    var map = new ymaps.Map('map', {{
+                        center: [{latitude.ToString(CultureInfo.InvariantCulture)}, {longitude.ToString(CultureInfo.InvariantCulture)}],
+                        zoom: 16,
+                        controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
+                    }});
+                    
+                    var placemark = new ymaps.Placemark([{latitude.ToString(CultureInfo.InvariantCulture)}, {longitude.ToString(CultureInfo.InvariantCulture)}], {{
+                        hintContent: 'Р’Р°С€Рµ РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµ',
+                        balloonContent: 'Р’С‹ РЅР°С…РѕРґРёС‚РµСЃСЊ Р·РґРµСЃСЊ<br>РўРѕС‡РЅРѕСЃС‚СЊ: {Math.Round(accuracy)} Рј'
+                    }}, {{
+                        preset: 'islands#geolocationIcon',
+                        iconColor: '#4285F4'
+                    }});
+                    
+                    map.geoObjects.add(placemark);
+                    
+                    var circle = new ymaps.Circle([[{latitude.ToString(CultureInfo.InvariantCulture)}, {longitude.ToString(CultureInfo.InvariantCulture)}], {{{accuracy.ToString(CultureInfo.InvariantCulture)}}}], {{}}, {{
+                        fillColor: '#4285F4',
+                        fillOpacity: 0.2,
+                        strokeColor: '#4285F4',
+                        strokeOpacity: 0.6,
+                        strokeWidth: 1
+                    }});
+                    
+                    map.geoObjects.add(circle);
+                }});
+            </script>
+        </body>
+        </html>";
+    }
+
     private void LoadMapWithRoute(string coords, string names)
     {
         try
         {
-            Debug.WriteLine("Загрузка карты с маршрутом...");
+            Debug.WriteLine("Р—Р°РіСЂСѓР·РєР° РєР°СЂС‚С‹ СЃ РјР°СЂС€СЂСѓС‚РѕРј...");
 
             var coordinates = coords.Split('|');
             var placeNames = names.Split('|');
 
-            Debug.WriteLine($"Количество координат: {coordinates.Length}");
-            Debug.WriteLine($"Количество названий: {placeNames.Length}");
-
             if (coordinates.Length < 2)
             {
-                Debug.WriteLine("Недостаточно точек для построения маршрута");
-                DisplayAlert("Ошибка", "Недостаточно точек для построения маршрута", "OK");
+                Debug.WriteLine("РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С‚РѕС‡РµРє РґР»СЏ РїРѕСЃС‚СЂРѕРµРЅРёСЏ РјР°СЂС€СЂСѓС‚Р°");
+                DisplayAlert("РћС€РёР±РєР°", "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С‚РѕС‡РµРє РґР»СЏ РїРѕСЃС‚СЂРѕРµРЅРёСЏ РјР°СЂС€СЂСѓС‚Р°", "OK");
                 LoadMapWithCurrentLocationAsync().ConfigureAwait(false);
                 return;
             }
 
             var html = GenerateRouteHtml(coordinates, placeNames);
-
-            // Сохраняем HTML в файл для отладки
-            SaveHtmlToFile(html);
-
-            // Добавляем обработчик для перехвата сообщений от JavaScript
-            MapWebView.Navigating += WebView_Navigating;
-
             MapWebView.Source = new HtmlWebViewSource { Html = html };
 
-            // Добавляем обработчик ошибок JavaScript
             MapWebView.Navigated += (sender, e) => {
-                Debug.WriteLine($"WebView загружен: {e.Url}");
                 LoadingIndicator.IsVisible = false;
                 LoadingIndicator.IsRunning = false;
             };
-
-            MapWebView.Navigating += (sender, e) => {
-                Debug.WriteLine($"WebView загружается: {e.Url}");
-            };
-
-            // Обновляем информацию о маршруте
-            UpdateRouteInfo(coordinates.Length);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Ошибка загрузки карты: {ex.Message}");
-            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-            DisplayAlert("Ошибка", $"Ошибка загрузки карты: {ex.Message}", "OK");
+            Debug.WriteLine($"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РєР°СЂС‚С‹: {ex.Message}");
+            DisplayAlert("РћС€РёР±РєР°", $"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РєР°СЂС‚С‹: {ex.Message}", "OK");
             LoadingIndicator.IsVisible = false;
             LoadingIndicator.IsRunning = false;
             LoadMapWithCurrentLocationAsync().ConfigureAwait(false);
         }
     }
 
-    // Обработчик для перехвата сообщений от JavaScript
-    private void WebView_Navigating(object sender, WebNavigatingEventArgs e)
-    {
-        if (e.Url.StartsWith("js://"))
-        {
-            e.Cancel = true; // Отменяем навигацию по этому URL
-
-            // Парсим URL для получения информации о маршруте
-            var uri = new Uri(e.Url);
-            var query = uri.Query.TrimStart('?');
-            var parameters = ParseQueryParameters(query);
-
-            if (parameters.TryGetValue("length", out var length) &&
-                parameters.TryGetValue("duration", out var duration))
-            {
-                // Сохраняем информацию о маршруте
-                _routeDistance = length;
-                _routeDuration = duration;
-
-                // Обновляем интерфейс
-                UpdateRouteInfoWithDetails(length, duration);
-            }
-        }
-    }
-
-    // Обновляем метод UpdateRouteInfo, чтобы показывать более подробную информацию
-    private void UpdateRouteInfo(int pointsCount)
-    {
-        // Обновляем текст метки с информацией о маршруте
-        if (pointsCount > 0)
-        {
-            string startPoint = pointsCount > 0 ? "вашего местоположения" : "неизвестной точки";
-            RouteInfoLabel.Text = $"Маршрут от {startPoint} через {pointsCount - 1} точек";
-        }
-        else
-        {
-            RouteInfoLabel.Text = "Маршрут не построен";
-        }
-        RouteInfoLabel.TextColor = Colors.Black;
-    }
-
-    // Метод для обновления информации о маршруте с деталями
-    private void UpdateRouteInfoWithDetails(string distance, string duration)
-    {
-        // Обновляем информацию о маршруте в интерфейсе
-        Device.BeginInvokeOnMainThread(() => {
-            RouteDistanceLabel.Text = $"Расстояние: {distance}";
-            RouteDurationLabel.Text = $"Время в пути: {duration}";
-
-            // Делаем метки видимыми
-            RouteDistanceLabel.IsVisible = true;
-            RouteDurationLabel.IsVisible = true;
-        });
-    }
-
-    // Метод SaveHtmlToFile
-    private void SaveHtmlToFile(string html)
-    {
-        try
-        {
-            var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var filePath = Path.Combine(documentsPath, "map_debug.html");
-            File.WriteAllText(filePath, html);
-            Debug.WriteLine($"HTML сохранен в файл: {filePath}");
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Ошибка при сохранении HTML: {ex.Message}");
-        }
-    }
-
-    // Метод LoadMapWithCurrentLocationAsync
     private async Task LoadMapWithCurrentLocationAsync()
     {
         try
@@ -1390,7 +979,7 @@ public partial class YandexMapPage : ContentPage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Ошибка при загрузке карты с текущим местоположением: {ex.Message}");
+            Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РєР°СЂС‚С‹ СЃ С‚РµРєСѓС‰РёРј РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµРј: {ex.Message}");
             LoadDefaultMap();
         }
     }
