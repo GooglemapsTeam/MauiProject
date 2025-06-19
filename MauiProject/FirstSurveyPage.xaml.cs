@@ -1,5 +1,5 @@
-
 namespace Emotional_Map;
+
 public partial class FirstSurveyPage : ContentPage
 {
     public FirstSurveyPage()
@@ -11,7 +11,7 @@ public partial class FirstSurveyPage : ContentPage
     {
         Preferences.Set("Name", NameEntry.Text);
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        await Shell.Current.GoToAsync("//"+nameof(SecondSurveyPage), true);
+        await Shell.Current.GoToAsync("//" + nameof(SecondSurveyPage), true);
     }
 
     public void NameEntryTextChanged(object sender, TextChangedEventArgs e)
@@ -22,6 +22,5 @@ public partial class FirstSurveyPage : ContentPage
             NextButton.TextColor = Color.FromRgb(0, 0, 0);
         else
             NextButton.TextColor = Color.FromHex("#757575");
-
     }
 }

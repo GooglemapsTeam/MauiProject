@@ -1,64 +1,874 @@
-using Plugin.Maui.Audio;
+п»їusing Emotional_Map.Models;
+using Emotional_Map.Services;
 
 namespace Emotional_Map;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage()
-	{
+    private const string PLACE_CARD_BORDER_COLOR = "#E0E0E0";
+    private const string PRIMARY_COLOR = "#14D0FF";
+    private const string FAVORITE_COLOR = "#FF6B6B";
+    private const string DISABLED_COLOR = "#CCC";
+    private const string TEXT_SECONDARY_COLOR = "#666";
+    private const string BACKGROUND_COLOR = "#E6F9FF";
+
+    private List<Place> _currentRecommendations;
+    private Location _userLocation;
+
+    public MainPage()
+    {
         InitializeComponent();
-        CreatePathCards();
-        HeaderLabel.Text = Preferences.Get("Name", "Пользователь");
-        ProfileImage.Source = ImageSource.FromFile(AppImageHelper.CurrentImagePath);
-    }
-    protected async override void OnNavigatedTo(NavigatedToEventArgs args)
-    {
-        base.OnNavigatedTo(args);
-        HeaderLabel.Text = Preferences.Get("Name", "Пользователь");
-        ProfileImage.Source = AppImageHelper.CachedImage;
     }
 
-    private async void OnProfileClicked(object sender, EventArgs e)
+    protected override async void OnAppearing()
     {
-        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        await Shell.Current.GoToAsync("//" + nameof(ProfilePage), true);
+        base.OnAppearing();
+
+        if (!AppStateService.IsSurveyCompleted())
+        {
+            await NavigateToSurvey();
+            return;
+        }
+
+        await InitializePageAsync();
     }
 
-    private async void OnFavouriteClicked(object sender, EventArgs e)
+    private async Task InitializePageAsync()
+    {
+        LoadUserProfile();
+        await LoadRecommendationsAsync();
+        UpdateUIElements();
+        CheckSurveyRetakeReminder();
+    }
+
+    private void LoadUserProfile()
+    {
+        var userName = Preferences.Get("Name", "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ");
+        WelcomeLabel.Text = $"РџСЂРёРІРµС‚, {userName}! рџ‘‹";
+        HeaderLabel.Text = userName;
+
+        var profileImagePath = Preferences.Get("ProfileImagePath", "");
+        if (!string.IsNullOrEmpty(profileImagePath))
+        {
+            ProfileImage.Source = profileImagePath;
+        }
+    }
+
+    private async Task LoadRecommendationsAsync()
+    {
+        try
+        {
+            _currentRecommendations = RecommendationService.GetRecommendations();
+            RecommendationsContainer.Children.Clear();
+
+            if (_currentRecommendations.Any())
+            {
+                await DisplayRecommendations();
+                NoRecommendationsFrame.IsVisible = false;
+            }
+            else
+            {
+                NoRecommendationsFrame.IsVisible = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЂРµРєРѕРјРµРЅРґР°С†РёРё: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task DisplayRecommendations()
+    {
+        for (int i = 0; i < _currentRecommendations.Count; i++)
+        {
+            var place = _currentRecommendations[i];
+            var placeCard = CreatePlaceCard(place, i + 1);
+            RecommendationsContainer.Children.Add(placeCard);
+        }
+    }
+
+    private void UpdateUIElements()
+    {
+        UpdateRetakeSurveyVisibility();
+    }
+
+    private async void CheckSurveyRetakeReminder()
+    {
+        try
+        {
+            if (!AppStateService.ShouldSuggestRetakeSurvey()) return;
+
+            var lastSurveyDate = AppStateService.GetLastSurveyDate();
+            var daysSinceLastSurvey = lastSurveyDate.HasValue ?
+                (int)(DateTime.Now - lastSurveyDate.Value).TotalDays : 0;
+
+            if (daysSinceLastSurvey > 7)
+            {
+                var shouldRetake = await ShowSurveyRetakeDialog(daysSinceLastSurvey);
+                if (shouldRetake)
+                {
+                    RetakeSurveyAsync();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"РћС€РёР±РєР° РїСЂРѕРІРµСЂРєРё РЅР°РїРѕРјРёРЅР°РЅРёСЏ РѕР± РѕРїСЂРѕСЃРµ: {ex.Message}");
+        }
+    }
+
+    private async Task<bool> ShowSurveyRetakeDialog(int daysSinceLastSurvey)
+    {
+        return await DisplayAlert("РћР±РЅРѕРІРёС‚СЊ СЂРµРєРѕРјРµРЅРґР°С†РёРё",
+            $"РџСЂРѕС€Р»Рѕ {daysSinceLastSurvey} РґРЅРµР№ СЃ РїРѕСЃР»РµРґРЅРµРіРѕ РѕРїСЂРѕСЃР°.\n\n" +
+            "РҐРѕС‚РёС‚Рµ РїСЂРѕР№С‚Рё РѕРїСЂРѕСЃ Р·Р°РЅРѕРІРѕ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ Р°РєС‚СѓР°Р»СЊРЅС‹С… СЂРµРєРѕРјРµРЅРґР°С†РёР№?",
+            "Р”Р°, РѕР±РЅРѕРІРёС‚СЊ", "РџРѕР·Р¶Рµ");
+    }
+
+    private Frame CreatePlaceCard(Place place, int index)
+    {
+        var frame = CreateCardFrame();
+        var mainLayout = new VerticalStackLayout { Spacing = 10 };
+
+        mainLayout.Children.Add(CreateCardHeader(place, index));
+        mainLayout.Children.Add(CreateDescriptionLabel(place.Description));
+        mainLayout.Children.Add(CreateDetailsGrid(place));
+        mainLayout.Children.Add(CreateActionButtons(place));
+
+        frame.Content = mainLayout;
+        return frame;
+    }
+
+    private Frame CreateCardFrame()
+    {
+        return new Frame
+        {
+            WidthRequest = 400,
+            BackgroundColor = Colors.White,
+            BorderColor = Color.FromHex(PLACE_CARD_BORDER_COLOR),
+            CornerRadius = 20,
+            Padding = 15,
+            Margin = new Thickness(0, 5),
+            HasShadow = true
+        };
+    }
+
+    private HorizontalStackLayout CreateCardHeader(Place place, int index)
+    {
+        var headerLayout = new HorizontalStackLayout { Spacing = 10 };
+
+        var numberLabel = new Label
+        {
+            Text = $"#{index}",
+            FontSize = 12,
+            TextColor = Colors.White,
+            BackgroundColor = Color.FromHex(PRIMARY_COLOR),
+            WidthRequest = 30,
+            HeightRequest = 30,
+            HorizontalTextAlignment = TextAlignment.Center,
+            VerticalTextAlignment = TextAlignment.Center
+        };
+
+        var titleLabel = new Label
+        {
+            Text = place.Name,
+            FontSize = 18,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Colors.Black,
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.FillAndExpand
+        };
+
+        headerLayout.Children.Add(numberLabel);
+        headerLayout.Children.Add(titleLabel);
+
+        return headerLayout;
+    }
+
+    private Label CreateDescriptionLabel(string description)
+    {
+        return new Label
+        {
+            Text = description,
+            FontSize = 14,
+            TextColor = Color.FromHex(TEXT_SECONDARY_COLOR),
+            Margin = new Thickness(0, 5, 0, 10)
+        };
+    }
+
+    private Grid CreateDetailsGrid(Place place)
+    {
+        var detailsGrid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
+            },
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }
+            },
+            RowSpacing = 5
+        };
+
+        AddDetailToGrid(detailsGrid, "рџ“Ќ", place.District, 0, 0);
+        AddDetailToGrid(detailsGrid, "рџ‘Ґ", place.Company, 0, 1);
+        AddDetailToGrid(detailsGrid, "вЏ°", place.Time, 1, 0);
+        AddDetailToGrid(detailsGrid, "рџ’°", place.Budget, 1, 1);
+
+        var activityLabel = CreateDetailLabel("рџЋЇ", place.Activity);
+        Grid.SetRow(activityLabel, 2);
+        Grid.SetColumn(activityLabel, 0);
+        Grid.SetColumnSpan(activityLabel, 2);
+        detailsGrid.Children.Add(activityLabel);
+
+        return detailsGrid;
+    }
+
+    private void AddDetailToGrid(Grid grid, string icon, string text, int row, int column)
+    {
+        var label = CreateDetailLabel(icon, text);
+        Grid.SetRow(label, row);
+        Grid.SetColumn(label, column);
+        grid.Children.Add(label);
+    }
+
+    private Label CreateDetailLabel(string icon, string text)
+    {
+        return new Label
+        {
+            Text = $"{icon} {text}",
+            FontSize = 12,
+            TextColor = Color.FromHex(TEXT_SECONDARY_COLOR)
+        };
+    }
+
+    private HorizontalStackLayout CreateActionButtons(Place place)
+    {
+        var buttonsLayout = new HorizontalStackLayout
+        {
+            Spacing = 10,
+            HorizontalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+
+        var mapButton = CreateMapButton(place);
+        var favoriteButton = CreateFavoriteButton(place);
+
+        buttonsLayout.Children.Add(mapButton);
+        buttonsLayout.Children.Add(favoriteButton);
+
+        return buttonsLayout;
+    }
+
+    private Button CreateMapButton(Place place)
+    {
+        var button = new Button
+        {
+            Text = "РќР° РєР°СЂС‚Рµ",
+            FontSize = 12,
+            BackgroundColor = Color.FromHex(PRIMARY_COLOR),
+            TextColor = Colors.White,
+            CornerRadius = 15,
+            Padding = new Thickness(15, 8)
+        };
+
+        button.Clicked += (s, e) => OnShowOnMapClicked(place);
+        return button;
+    }
+
+    private Button CreateFavoriteButton(Place place)
+    {
+        var isPlaceFavorite = IsPlaceInFavorites(place.Id);
+        var button = new Button
+        {
+            Text = isPlaceFavorite ? "вќ¤пёЏ" : "рџ¤Ќ",
+            FontSize = 12,
+            BackgroundColor = Colors.White,
+            TextColor = isPlaceFavorite ? Color.FromHex(FAVORITE_COLOR) : Color.FromHex(DISABLED_COLOR),
+            BorderColor = isPlaceFavorite ? Color.FromHex(FAVORITE_COLOR) : Color.FromHex(DISABLED_COLOR),
+            BorderWidth = 1,
+            CornerRadius = 15,
+            WidthRequest = 40,
+            HeightRequest = 32
+        };
+
+        button.Clicked += (s, e) => OnTogglePlaceFavoriteClicked(place, button);
+        return button;
+    }
+
+    private void UpdateRetakeSurveyVisibility()
+    {
+        var hasRecommendations = _currentRecommendations?.Any() == true;
+        RetakeSurveyFrame.IsVisible = hasRecommendations;
+        ShowFullRouteButton.IsVisible = hasRecommendations;
+    }
+
+    private bool IsPlaceInFavorites(int placeId)
+    {
+        try
+        {
+            var favorites = Preferences.Get("FavoritePlaces", "");
+            if (string.IsNullOrEmpty(favorites)) return false;
+
+            var favoritesList = favorites.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(int.Parse).ToList();
+            return favoritesList.Contains(placeId);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private async void OnTogglePlaceFavoriteClicked(Place place, Button favoriteButton)
+    {
+        try
+        {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+            var favorites = GetCurrentFavorites();
+
+            if (favorites.Contains(place.Id))
+            {
+                await RemoveFromFavorites(place, favoriteButton, favorites);
+            }
+            else
+            {
+                await AddToFavorites(place, favoriteButton, favorites);
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ РёР·РјРµРЅРёС‚СЊ РёР·Р±СЂР°РЅРЅРѕРµ: {ex.Message}", "OK");
+        }
+    }
+
+    private List<int> GetCurrentFavorites()
+    {
+        var favorites = Preferences.Get("FavoritePlaces", "");
+        return string.IsNullOrEmpty(favorites) ? new List<int>() :
+               favorites.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                       .Select(int.Parse).ToList();
+    }
+
+    private async Task RemoveFromFavorites(Place place, Button favoriteButton, List<int> favorites)
+    {
+        favorites.Remove(place.Id);
+        favoriteButton.Text = "рџ¤Ќ";
+        favoriteButton.TextColor = Color.FromHex(DISABLED_COLOR);
+        favoriteButton.BorderColor = Color.FromHex(DISABLED_COLOR);
+
+        Preferences.Set("FavoritePlaces", string.Join(",", favorites));
+        await DisplayAlert("РЈРґР°Р»РµРЅРѕ", $"{place.Name} СѓРґР°Р»РµРЅРѕ РёР· РёР·Р±СЂР°РЅРЅРѕРіРѕ", "OK");
+    }
+
+    private async Task AddToFavorites(Place place, Button favoriteButton, List<int> favorites)
+    {
+        favorites.Add(place.Id);
+        favoriteButton.Text = "вќ¤пёЏ";
+        favoriteButton.TextColor = Color.FromHex(FAVORITE_COLOR);
+        favoriteButton.BorderColor = Color.FromHex(FAVORITE_COLOR);
+
+        Preferences.Set("FavoritePlaces", string.Join(",", favorites));
+        await DisplayAlert("Р”РѕР±Р°РІР»РµРЅРѕ", $"{place.Name} РґРѕР±Р°РІР»РµРЅРѕ РІ РёР·Р±СЂР°РЅРЅРѕРµ!", "OK");
+    }
+
+    private async Task NavigateToSurvey()
+    {
+        await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage));
+    }
+
+    private async void OnShowOnMapClicked(Place place)
+    {
+        try
+        {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+            var navigationParameter = new Dictionary<string, object>
+            {
+                { "SelectedPlace", place }
+            };
+
+            await Shell.Current.GoToAsync($"//{nameof(YandexMapPage)}", navigationParameter);
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РєР°СЂС‚Сѓ: {ex.Message}", "OK");
+        }
+    }
+
+    private async void OnShowFullRouteClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+            if (_currentRecommendations?.Any() != true)
+            {
+                await DisplayAlert("РћС€РёР±РєР°", "РќРµС‚ СЂРµРєРѕРјРµРЅРґР°С†РёР№ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РјР°СЂС€СЂСѓС‚Р°", "OK");
+                return;
+            }
+
+            var navigationParameter = new Dictionary<string, object>
+            {
+                { "AllRecommendations", _currentRecommendations }
+            };
+
+            await Shell.Current.GoToAsync($"//{nameof(YandexMapPage)}", navigationParameter);
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РєР°СЂС‚Сѓ: {ex.Message}", "OK");
+        }
+    }
+
+    public async void OnUpdatePathesClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+            var button = sender as Button;
+            if (button != null)
+            {
+                button.Text = "РћР±РЅРѕРІР»РµРЅРёРµ...";
+                button.IsEnabled = false;
+            }
+
+            await LoadRecommendationsAsync();
+            UpdateUIElements();
+
+            if (button != null)
+            {
+                button.Text = "рџ”„";
+                button.IsEnabled = true;
+            }
+
+            await DisplayAlert("РћР±РЅРѕРІР»РµРЅРѕ", "РњР°СЂС€СЂСѓС‚С‹ РѕР±РЅРѕРІР»РµРЅС‹ РЅР° РѕСЃРЅРѕРІРµ РІР°С€РёС… РїСЂРµРґРїРѕС‡С‚РµРЅРёР№", "OK");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ РјР°СЂС€СЂСѓС‚С‹: {ex.Message}", "OK");
+
+            var button = sender as Button;
+            if (button != null)
+            {
+                button.Text = "рџ”„";
+                button.IsEnabled = true;
+            }
+        }
+    }
+
+    public async void OnFavouriteClicked(object sender, EventArgs e)
     {
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         await Shell.Current.GoToAsync("//" + nameof(FavouritePage), true);
     }
 
-    private async void OnChangeMoodClicked(object sender, EventArgs e)
+    public async void OnProfileClicked(object sender, EventArgs e)
     {
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+        await Shell.Current.GoToAsync("//" + nameof(ProfilePage), true);
+    }
+
+    private async void OnAddRouteToFavoritesClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+            if (_currentRecommendations?.Any() != true)
+            {
+                await DisplayAlert("РћС€РёР±РєР°", "РќРµС‚ СЂРµРєРѕРјРµРЅРґР°С†РёР№ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ РІ РёР·Р±СЂР°РЅРЅРѕРµ", "OK");
+                return;
+            }
+
+            await ShowRouteSelectionDialog();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ РјР°СЂС€СЂСѓС‚ РІ РёР·Р±СЂР°РЅРЅРѕРµ: {ex.Message}", "OK");
+        }
+    }
+
+    private async void OnRetakeSurveyClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            if (sender != null)
+                AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+            var shouldRetake = await DisplayAlert("РџСЂРѕР№С‚Рё РѕРїСЂРѕСЃ Р·Р°РЅРѕРІРѕ",
+                "Р’С‹ С…РѕС‚РёС‚Рµ РїСЂРѕР№С‚Рё РѕРїСЂРѕСЃ Р·Р°РЅРѕРІРѕ? Р­С‚Рѕ РїРѕРјРѕР¶РµС‚ РїРѕР»СѓС‡РёС‚СЊ РЅРѕРІС‹Рµ РїРµСЂСЃРѕРЅР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Рµ СЂРµРєРѕРјРµРЅРґР°С†РёРё РЅР° РѕСЃРЅРѕРІРµ РІР°С€РµРіРѕ С‚РµРєСѓС‰РµРіРѕ РЅР°СЃС‚СЂРѕРµРЅРёСЏ.",
+                "Р”Р°, РїСЂРѕР№С‚Рё РѕРїСЂРѕСЃ", "РћС‚РјРµРЅР°");
+
+            if (shouldRetake)
+            {
+                await HandleSurveyRetake();
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ РїРµСЂРµР№С‚Рё Рє РѕРїСЂРѕСЃСѓ: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task HandleSurveyRetake()
+    {
+        var clearPreviousAnswers = await DisplayAlert("РћС‡РёСЃС‚РёС‚СЊ РїСЂРµРґС‹РґСѓС‰РёРµ РѕС‚РІРµС‚С‹",
+            "РҐРѕС‚РёС‚Рµ РѕС‡РёСЃС‚РёС‚СЊ РїСЂРµРґС‹РґСѓС‰РёРµ РѕС‚РІРµС‚С‹ Рё РЅР°С‡Р°С‚СЊ СЃ С‡РёСЃС‚РѕРіРѕ Р»РёСЃС‚Р°?",
+            "Р”Р°, РѕС‡РёСЃС‚РёС‚СЊ", "РќРµС‚, РѕСЃС‚Р°РІРёС‚СЊ");
+
+        if (clearPreviousAnswers)
+        {
+            AppStateService.ResetSurvey();
+        }
+
         await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
     }
 
-    private async void OnUpdatePathesClicked(object sender, EventArgs e)
+    private async Task RetakeSurveyAsync()
+    {
+        try
+        {
+            var shouldRetake = await DisplayAlert("РџСЂРѕР№С‚Рё РѕРїСЂРѕСЃ Р·Р°РЅРѕРІРѕ",
+                "Р’С‹ С…РѕС‚РёС‚Рµ РїСЂРѕР№С‚Рё РѕРїСЂРѕСЃ Р·Р°РЅРѕРІРѕ? Р­С‚Рѕ РїРѕРјРѕР¶РµС‚ РїРѕР»СѓС‡РёС‚СЊ РЅРѕРІС‹Рµ РїРµСЂСЃРѕРЅР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Рµ СЂРµРєРѕРјРµРЅРґР°С†РёРё РЅР° РѕСЃРЅРѕРІРµ РІР°С€РµРіРѕ С‚РµРєСѓС‰РµРіРѕ РЅР°СЃС‚СЂРѕРµРЅРёСЏ.",
+                "Р”Р°, РїСЂРѕР№С‚Рё РѕРїСЂРѕСЃ", "РћС‚РјРµРЅР°");
+
+            if (shouldRetake)
+            {
+                await HandleSurveyRetake();
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ РїРµСЂРµР№С‚Рё Рє РѕРїСЂРѕСЃСѓ: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task ShowRouteSelectionDialog()
+    {
+        try
+        {
+            var selectionPage = CreateRouteSelectionPage();
+            await Navigation.PushModalAsync(new NavigationPage(selectionPage));
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", $"РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РґРёР°Р»РѕРі РІС‹Р±РѕСЂР°: {ex.Message}", "OK");
+        }
+    }
+
+    private ContentPage CreateRouteSelectionPage()
+    {
+        var selectionPage = new ContentPage
+        {
+            Title = "Р’С‹Р±РѕСЂ РјР°СЂС€СЂСѓС‚Р°",
+            BackgroundColor = Color.FromHex(BACKGROUND_COLOR)
+        };
+
+        var scrollView = new ScrollView();
+        var mainLayout = new VerticalStackLayout { Padding = 20, Spacing = 15 };
+
+        var titleLabel = new Label
+        {
+            Text = "Р’С‹Р±РµСЂРёС‚Рµ РјРµСЃС‚Р° РґР»СЏ РјР°СЂС€СЂСѓС‚Р°",
+            FontSize = 20,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Colors.Black,
+            HorizontalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 20)
+        };
+        mainLayout.Children.Add(titleLabel);
+
+        var selectedPlaces = new List<Place>();
+        var checkBoxes = new List<CheckBox>();
+
+        foreach (var place in _currentRecommendations)
+        {
+            var placeFrame = CreatePlaceSelectionFrame(place, selectedPlaces, checkBoxes);
+            mainLayout.Children.Add(placeFrame);
+            selectedPlaces.Add(place);
+        }
+
+        var optimizeButton = CreateOptimizeButton(selectedPlaces, checkBoxes);
+        mainLayout.Children.Add(optimizeButton);
+
+        var analysisFrame = CreateAnalysisFrame(selectedPlaces, checkBoxes);
+        mainLayout.Children.Add(analysisFrame);
+
+        var nameEntry = new Entry
+        {
+            Placeholder = "Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ РјР°СЂС€СЂСѓС‚Р°",
+            Text = $"РњР°СЂС€СЂСѓС‚ РѕС‚ {DateTime.Now:dd.MM.yyyy}",
+            FontSize = 16,
+            Margin = new Thickness(0, 20, 0, 0)
+        };
+        mainLayout.Children.Add(nameEntry);
+
+        var buttonsLayout = CreateDialogButtons(selectedPlaces, nameEntry);
+        mainLayout.Children.Add(buttonsLayout);
+
+        scrollView.Content = mainLayout;
+        selectionPage.Content = scrollView;
+
+        return selectionPage;
+    }
+
+    private Frame CreatePlaceSelectionFrame(Place place, List<Place> selectedPlaces, List<CheckBox> checkBoxes)
+    {
+        var placeFrame = new Frame
+        {
+            BackgroundColor = Colors.White,
+            BorderColor = Color.FromHex(PLACE_CARD_BORDER_COLOR),
+            CornerRadius = 10,
+            Padding = 15,
+            Margin = new Thickness(0, 5)
+        };
+
+        var placeLayout = new HorizontalStackLayout { Spacing = 15 };
+
+        var checkBox = new CheckBox
+        {
+            IsChecked = true,
+            Color = Color.FromHex(PRIMARY_COLOR)
+        };
+        checkBoxes.Add(checkBox);
+
+        var placeInfo = new VerticalStackLayout { Spacing = 5, HorizontalOptions = LayoutOptions.FillAndExpand };
+
+        var placeNameLabel = new Label
+        {
+            Text = place.Name,
+            FontSize = 16,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Colors.Black
+        };
+
+        var placeDetailsLabel = new Label
+        {
+            Text = $"{place.District} вЂў {place.Activity}",
+            FontSize = 12,
+            TextColor = Color.FromHex(TEXT_SECONDARY_COLOR)
+        };
+
+        placeInfo.Children.Add(placeNameLabel);
+        placeInfo.Children.Add(placeDetailsLabel);
+
+        placeLayout.Children.Add(checkBox);
+        placeLayout.Children.Add(placeInfo);
+
+        placeFrame.Content = placeLayout;
+
+        checkBox.CheckedChanged += (s, e) =>
+        {
+            if (e.Value)
+            {
+                if (!selectedPlaces.Contains(place))
+                    selectedPlaces.Add(place);
+            }
+            else
+            {
+                selectedPlaces.Remove(place);
+            }
+        };
+
+        return placeFrame;
+    }
+
+    private Button CreateOptimizeButton(List<Place> selectedPlaces, List<CheckBox> checkBoxes)
+    {
+        var optimizeButton = new Button
+        {
+            Text = "рџЋЇ РћРїС‚РёРјРёР·РёСЂРѕРІР°С‚СЊ РїРѕСЂСЏРґРѕРє РјРµСЃС‚",
+            FontSize = 12,
+            BackgroundColor = Color.FromHex("#FF9800"),
+            TextColor = Colors.White,
+            CornerRadius = 15,
+            Padding = new Thickness(15, 8),
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+
+        optimizeButton.Clicked += (s, e) =>
+        {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+            if (selectedPlaces.Count > 1)
+            {
+                var optimizedPlaces = RouteOptimizationService.OptimizeRoute(selectedPlaces, _userLocation);
+                selectedPlaces.Clear();
+                selectedPlaces.AddRange(optimizedPlaces);
+
+                for (int i = 0; i < checkBoxes.Count; i++)
+                {
+                    var place = _currentRecommendations[i];
+                    var isSelected = selectedPlaces.Contains(place);
+                    checkBoxes[i].IsChecked = isSelected;
+                }
+
+                DisplayAlert("РЈСЃРїРµС…", "РњР°СЂС€СЂСѓС‚ РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅ! РџРѕСЂСЏРґРѕРє РјРµСЃС‚ РёР·РјРµРЅРµРЅ РґР»СЏ РјРёРЅРёРјРёР·Р°С†РёРё СЂР°СЃСЃС‚РѕСЏРЅРёСЏ.", "OK");
+            }
+            else
+            {
+                DisplayAlert("РРЅС„РѕСЂРјР°С†РёСЏ", "Р”Р»СЏ РѕРїС‚РёРјРёР·Р°С†РёРё РЅСѓР¶РЅРѕ РІС‹Р±СЂР°С‚СЊ РјРёРЅРёРјСѓРј 2 РјРµСЃС‚Р°", "OK");
+            }
+        };
+
+        return optimizeButton;
+    }
+
+    private Frame CreateAnalysisFrame(List<Place> selectedPlaces, List<CheckBox> checkBoxes)
+    {
+        var analysisFrame = new Frame
+        {
+            BackgroundColor = Color.FromHex("#F0F8FF"),
+            BorderColor = Color.FromHex(PRIMARY_COLOR),
+            CornerRadius = 10,
+            Padding = 15,
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+
+        var analysisLayout = new VerticalStackLayout { Spacing = 8 };
+        var analysisLabel = new Label
+        {
+            Text = "рџ“Љ РђРЅР°Р»РёР· РјР°СЂС€СЂСѓС‚Р°",
+            FontSize = 14,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Colors.Black
+        };
+        analysisLayout.Children.Add(analysisLabel);
+
+        var updateAnalysis = new Action(() => UpdateRouteAnalysis(analysisLayout, selectedPlaces));
+
+        foreach (var checkBox in checkBoxes)
+        {
+            checkBox.CheckedChanged += (s, e) => updateAnalysis();
+        }
+
+        updateAnalysis();
+
+        analysisFrame.Content = analysisLayout;
+        return analysisFrame;
+    }
+
+    private void UpdateRouteAnalysis(VerticalStackLayout analysisLayout, List<Place> selectedPlaces)
+    {
+        if (analysisLayout.Children.Count > 1)
+        {
+            for (int i = analysisLayout.Children.Count - 1; i > 0; i--)
+            {
+                analysisLayout.Children.RemoveAt(i);
+            }
+        }
+
+        if (selectedPlaces.Count > 0)
+        {
+            var analysis = RouteOptimizationService.AnalyzeRoute(selectedPlaces, _userLocation);
+
+            var analysisText = $"рџ“Џ Р Р°СЃСЃС‚РѕСЏРЅРёРµ: {analysis.TotalDistance} РєРј\n" +
+                              $"рџљ¶ Р’СЂРµРјСЏ РІ РїСѓС‚Рё: {analysis.GetFormattedWalkingTime()}\n" +
+                              $"вЏ±пёЏ РћР±С‰РµРµ РІСЂРµРјСЏ: {analysis.GetFormattedTime()}\n" +
+                              $"рџЏпёЏ Р Р°Р№РѕРЅРѕРІ: {analysis.DistrictsCount}\n" +
+                              $"рџЋЇ РћСЃРЅРѕРІРЅР°СЏ Р°РєС‚РёРІРЅРѕСЃС‚СЊ: {analysis.MainActivity}";
+
+            var analysisDetailsLabel = new Label
+            {
+                Text = analysisText,
+                FontSize = 12,
+                TextColor = Color.FromHex(TEXT_SECONDARY_COLOR)
+            };
+
+            analysisLayout.Children.Add(analysisDetailsLabel);
+
+            if (analysis.Recommendations.Any())
+            {
+                var recommendationsLabel = new Label
+                {
+                    Text = "рџ’Ў Р РµРєРѕРјРµРЅРґР°С†РёРё:\n" + string.Join("\n", analysis.Recommendations),
+                    FontSize = 11,
+                    TextColor = Color.FromHex("#FF9800"),
+                    Margin = new Thickness(0, 5, 0, 0)
+                };
+                analysisLayout.Children.Add(recommendationsLabel);
+            }
+        }
+    }
+
+    private HorizontalStackLayout CreateDialogButtons(List<Place> selectedPlaces, Entry nameEntry)
+    {
+        var buttonsLayout = new HorizontalStackLayout
+        {
+            Spacing = 15,
+            HorizontalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 20, 0, 0)
+        };
+
+        var cancelButton = new Button
+        {
+            Text = "РћС‚РјРµРЅР°",
+            FontSize = 14,
+            BackgroundColor = Color.FromHex(DISABLED_COLOR),
+            TextColor = Colors.White,
+            CornerRadius = 20,
+            Padding = new Thickness(20, 10)
+        };
+
+        var saveButton = new Button
+        {
+            Text = "РЎРѕС…СЂР°РЅРёС‚СЊ РјР°СЂС€СЂСѓС‚",
+            FontSize = 14,
+            BackgroundColor = Color.FromHex(PRIMARY_COLOR),
+            TextColor = Colors.White,
+            CornerRadius = 20,
+            Padding = new Thickness(20, 10)
+        };
+
+        cancelButton.Clicked += async (s, e) =>
+        {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+            await Navigation.PopModalAsync();
+        };
+
+        saveButton.Clicked += async (s, e) => await SaveRouteToFavorites(selectedPlaces, nameEntry);
+
+        buttonsLayout.Children.Add(cancelButton);
+        buttonsLayout.Children.Add(saveButton);
+
+        return buttonsLayout;
+    }
+
+    private async Task SaveRouteToFavorites(List<Place> selectedPlaces, Entry nameEntry)
     {
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
+
+        if (selectedPlaces.Count == 0)
+        {
+            await DisplayAlert("РћС€РёР±РєР°", "Р’С‹Р±РµСЂРёС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ РјРµСЃС‚Рѕ РґР»СЏ РјР°СЂС€СЂСѓС‚Р°", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(nameEntry.Text))
+        {
+            await DisplayAlert("РћС€РёР±РєР°", "Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ РјР°СЂС€СЂСѓС‚Р°", "OK");
+            return;
+        }
+
+        var description = $"РњР°СЂС€СЂСѓС‚ РёР· {selectedPlaces.Count} РјРµСЃС‚, СЃРѕР·РґР°РЅРЅС‹Р№ {DateTime.Now:dd.MM.yyyy HH:mm}";
+        var favoriteRoute = new FavoriteRoute(nameEntry.Text, description, selectedPlaces);
+
+        var success = FavoriteRoutesService.AddFavoriteRoute(favoriteRoute);
+        if (success)
+        {
+            await Navigation.PopModalAsync();
+            await DisplayAlert("РЈСЃРїРµС…", $"РњР°СЂС€СЂСѓС‚ \"{nameEntry.Text}\" РґРѕР±Р°РІР»РµРЅ РІ РёР·Р±СЂР°РЅРЅРѕРµ!", "OK");
+        }
+        else
+        {
+            await DisplayAlert("РћС€РёР±РєР°", "РњР°СЂС€СЂСѓС‚ СЃ С‚Р°РєРёРј РЅР°Р·РІР°РЅРёРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ РІ РёР·Р±СЂР°РЅРЅРѕРј", "OK");
+        }
     }
-
-    public void CreatePathCards()
-    {
-        MainStack.Children.Clear();
-        for (var i = 0; i < 4; i++)
-            MainStack.Children.Add(new PathCard(MainStack,
-                new Place("Харитоновский сад", "Английский парк в Екатеринбурге, примыкает к усадьбе Расторгуевых — Харитоновых. Заложен в 1826 году, назван по имени основателя П. Я. Харитонова. В парке есть искусственное озеро с двумя насыпными островками и круглой беседкой-ротондой. В южной части парка сохранилось единственное сооружение из первоначальных садовых построек — грот. Символом парка является ротонда, построенная на искусственном острове в центре пруда. Харитоновский сад является объектом культурного наследия народов РФ федерального значения.", "a.jpg"),
-                new Place("Храм-на-Крови", "православный храм в Екатеринбурге, построенный на месте дома Ипатьева, в котором содержались под арестом и были расстреляны в ночь на 17 июля 1918 года последний российский император Николай II, его семья и четверо слуг. Построенный в 2000—2003 годах, он стал главной туристической достопримечательностью Екатеринбурга, а также главным центром памяти святого Николая II и его семьи, привлекающим православных паломников не только из России, но и со всего мира.", "b.webp"),
-                new Place("Парк литературного квартала", "Включает пять городских усадеб, в которых сейчас размещаются музейные экспозиции, посвященные литературной жизни Урала, а также парк, Камерный театр и летнюю эстраду.", "c.webp"),
-                new Place("Плотинка", "Плотинка – это начало Екатеринбурга и его сердце. Когда-то на реку Исеть приехали двое: инженер и начальник уральских заводов В.И. де Геннин и государственный деятель В.Н. Татищев. Как и на других уральских реках, они возвели плотину из лиственницы и дали начало металлоделательному заводу, открыв его в день Святой Екатерины – вокруг него и образовался Екатеринбург. Тут всегда кипит жизнь, тусуются все от детей до старичков, играют музыканты, продается кукуруза и кофе, в теплое время по пруду, который создала плотина, катают на лодках.", "d.jpg")
-            ));
-    }
-
-    public void GetNewCard(sbyte number)
-    {
-        // MainStack.Children[number]
-        throw new NotImplementedException();
-    }
-
-
 }

@@ -2,15 +2,158 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Emotional_Map.FavouritePage"
-             Title="FavouritePage"
+             Title="Избранное"
              BackgroundColor="#E6F9FF">
-    <VerticalStackLayout>
-        <Label Text="Избранные маршруты"
-               FontSize="24"
-               TextColor="Black"
-               HorizontalOptions="Center"
-               HorizontalTextAlignment="Center"
-               VerticalOptions="Start"
-               Margin="0, 25, 0, 0"/>
-    </VerticalStackLayout>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Frame Grid.Row="0" 
+               BackgroundColor="White" 
+               CornerRadius="0" 
+               Padding="20,15"
+               HasShadow="True">
+            <VerticalStackLayout>
+                <Label Text="Избранное"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       TextColor="Black"
+                       HorizontalOptions="Center"/>
+                <Label x:Name="FavoritesCountLabel"
+                       Text="У вас нет избранного"
+                       FontSize="14"
+                       TextColor="#666"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <ScrollView Grid.Row="1" Padding="20">
+            <VerticalStackLayout Spacing="20" HorizontalOptions="Center">
+
+                <Frame BackgroundColor="White" 
+                       CornerRadius="15" 
+                       Padding="20"
+                       HasShadow="True"
+                       x:Name="FavoritePlacesFrame"
+                       WidthRequest="400">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="❤️ Избранные места"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="Black"/>
+
+                        <VerticalStackLayout x:Name="FavoritePlacesContainer" Spacing="10">
+                        </VerticalStackLayout>
+
+                        <Label x:Name="NoFavoritePlacesLabel"
+                               Text="Нет избранных мест"
+                               FontSize="14"
+                               TextColor="#666"
+                               HorizontalOptions="Center"
+                               IsVisible="True"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Frame BackgroundColor="White" 
+                       CornerRadius="15" 
+                       Padding="20"
+                       HasShadow="True"
+                       x:Name="FavoriteRoutesFrame"
+                       WidthRequest="400">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="⭐ Избранные маршруты"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="Black"/>
+
+                        <VerticalStackLayout x:Name="FavoriteRoutesContainer" Spacing="15">
+                        </VerticalStackLayout>
+
+                        <Label x:Name="NoFavoriteRoutesLabel"
+                               Text="Нет избранных маршрутов"
+                               FontSize="14"
+                               TextColor="#666"
+                               HorizontalOptions="Center"
+                               IsVisible="True"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Frame x:Name="NoFavoritesFrame" 
+                       IsVisible="False"
+                       BackgroundColor="White"
+                       BorderColor="#E0E0E0"
+                       CornerRadius="15"
+                       Padding="30"
+                       Margin="0,20,0,0"
+                       WidthRequest="400">
+                    <VerticalStackLayout Spacing="15" HorizontalOptions="Center">
+                        <Label Text="💫"
+                               FontSize="48"
+                               HorizontalOptions="Center"/>
+                        <Label Text="Пока нет избранного"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="Black"
+                               HorizontalTextAlignment="Center"/>
+                        <Label Text="Добавляйте места и маршруты в избранное, чтобы быстро получать к ним доступ"
+                               FontSize="14"
+                               TextColor="#666"
+                               HorizontalTextAlignment="Center"/>
+                        <Button Text="Перейти к рекомендациям"
+                                FontSize="14"
+                                BackgroundColor="#14D0FF"
+                                TextColor="White"
+                                CornerRadius="20"
+                                Padding="20,10"
+                                HorizontalOptions="Center"
+                                Clicked="OnGoToRecommendationsClicked">
+                            <Button.Shadow>
+                                <Shadow Opacity="0.25" Radius="4" Offset="0, 4"/>
+                            </Button.Shadow>
+                        </Button>
+                    </VerticalStackLayout>
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Frame Grid.Row="2" 
+               BackgroundColor="White" 
+               CornerRadius="0" 
+               Padding="20,15"
+               HasShadow="True">
+            <HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
+
+                <Button Text="🏠 Главная"
+                        FontSize="14"
+                        BackgroundColor="#E6F9FF"
+                        TextColor="Black"
+                        CornerRadius="20"
+                        Padding="15,10"
+                        Clicked="OnHomeClicked">
+                    <Button.Shadow>
+                        <Shadow Opacity="0.25" Radius="4" Offset="0, 4"/>
+                    </Button.Shadow>
+                </Button>
+
+                <Button Text="🗑️ Очистить все"
+                        FontSize="14"
+                        BackgroundColor="#FF6B6B"
+                        TextColor="White"
+                        CornerRadius="20"
+                        Padding="15,10"
+                        Clicked="OnClearAllClicked">
+                    <Button.Shadow>
+                        <Shadow Opacity="0.25" Radius="4" Offset="0, 4"/>
+                    </Button.Shadow>
+                </Button>
+
+            </HorizontalStackLayout>
+        </Frame>
+
+    </Grid>
 </ContentPage>

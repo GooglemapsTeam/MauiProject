@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using System.Globalization;
 using System.Diagnostics;
+using Emotional_Map.Services;
 
 namespace Emotional_Map
 {
@@ -11,13 +12,13 @@ namespace Emotional_Map
         public const int CardWidth = 350;
         public const int CardHeight = 170;
         public int Duration { get; private set; } = 666;
-        private Place[] _places;
+        private Models.Place[] _places;
         private bool _isFavorited = false;
         private Border _favouriteButton;
         private VerticalStackLayout _parent;
-        private bool _isNavigating = false; // Флаг для предотвращения множественных нажатий
+        private bool _isNavigating = false;
 
-        public PathCard(VerticalStackLayout parent, params Place[] place)
+        public PathCard(VerticalStackLayout parent, params Models.Place[] place)
         {
             _places = place;
             _parent = parent;
@@ -190,7 +191,7 @@ namespace Emotional_Map
             };
         }
 
-        private Page CreateDescriptionWindow(Place place, sbyte number)
+        private Page CreateDescriptionWindow(Models.Place place, sbyte number)
         {
             var circlesContainer = new HorizontalStackLayout
             {
@@ -306,7 +307,6 @@ namespace Emotional_Map
                     return;
                 }
 
-                // Показываем индикатор загрузки
                 var loadingIndicator = new ActivityIndicator
                 {
                     IsRunning = true,
@@ -338,10 +338,8 @@ namespace Emotional_Map
 
                 await Application.Current.MainPage.Navigation.PushModalAsync(loadingPage);
 
-                // Получаем текущее местоположение
                 var location = await LocationService.Instance.GetCurrentLocationAsync();
 
-                // Объявляем переменные для координат и названий мест один раз
                 List<string> coordinatesList;
                 List<string> placeNamesList;
                 string coordinates;
@@ -355,7 +353,6 @@ namespace Emotional_Map
                     await Application.Current.MainPage.DisplayAlert("Ошибка",
                         "Не удалось получить местоположение. Маршрут будет построен только между выбранными точками.", "OK");
 
-                    // Строим маршрут только между выбранными точками
                     coordinates = string.Join("|", _places.Select(p =>
                         $"{p.Latitude.ToString(CultureInfo.InvariantCulture)},{p.Longitude.ToString(CultureInfo.InvariantCulture)}"));
 
@@ -363,29 +360,23 @@ namespace Emotional_Map
                 }
                 else
                 {
-                    // Обновляем текст загрузки
                     loadingLabel.Text = "Построение маршрута...";
 
-                    // Создаем список координат, начиная с текущего местоположения
                     coordinatesList = new List<string>
             {
                 $"{location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)}"
             };
 
-                    // Добавляем координаты выбранных мест
                     coordinatesList.AddRange(_places.Select(p =>
                         $"{p.Latitude.ToString(CultureInfo.InvariantCulture)},{p.Longitude.ToString(CultureInfo.InvariantCulture)}"));
 
-                    // Объединяем координаты в строку
                     coordinates = string.Join("|", coordinatesList);
 
-                    // Создаем список названий мест, начиная с "Моё местоположение"
                     placeNamesList = new List<string> { "Моё местоположение" };
                     placeNamesList.AddRange(_places.Select(p => p.Title));
                     placeNames = string.Join("|", placeNamesList);
                 }
 
-                // Кодируем параметры
                 encodedCoords = Uri.EscapeDataString(coordinates);
                 encodedNames = Uri.EscapeDataString(placeNames);
 
@@ -393,10 +384,8 @@ namespace Emotional_Map
                 Debug.WriteLine($"Названия: {placeNames}");
                 Debug.WriteLine($"URL: //YandexMapPage?coords={encodedCoords}&names={encodedNames}");
 
-                // Закрываем индикатор загрузки
                 await Application.Current.MainPage.Navigation.PopModalAsync();
 
-                // Переходим на страницу карты
                 await Shell.Current.GoToAsync($"//YandexMapPage?coords={encodedCoords}&names={encodedNames}");
             }
             catch (Exception ex)
@@ -404,11 +393,9 @@ namespace Emotional_Map
                 Debug.WriteLine($"Ошибка при построении маршрута: {ex.Message}");
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
 
-                // В случае ошибки показываем сообщение
                 await Application.Current.MainPage.DisplayAlert("Ошибка",
                     $"Произошла ошибка при построении маршрута: {ex.Message}", "OK");
 
-                // Закрываем индикатор загрузки, если он открыт
                 if (Application.Current.MainPage.Navigation.ModalStack.Count > 0)
                 {
                     await Application.Current.MainPage.Navigation.PopModalAsync();
@@ -430,7 +417,6 @@ namespace Emotional_Map
                 img.Source = _isFavorited ? "favourite_button_active.png" : "favourite_button.png";
                 await img.ScaleTo(1, 100, Easing.SinInOut);
             }
-            // Добавление в избранное не работает
         }
 
         private async void OnInfoClicked(object sender, EventArgs e)

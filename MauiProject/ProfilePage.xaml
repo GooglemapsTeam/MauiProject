@@ -2,123 +2,203 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Emotional_Map.ProfilePage"
-             Title="ProfilePage"
+             Title="Профиль"
              BackgroundColor="#E6F9FF">
-    <VerticalStackLayout HorizontalOptions="Center">
-        <Border Stroke="Transparent" 
-                    WidthRequest="120" 
-                    HeightRequest="120"
-                    Grid.Row="1">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="60,60,60,60" />
-            </Border.StrokeShape>
-            <Image Aspect="AspectFill" 
-                       x:Name="ProfileImage"/>
-        </Border>
 
-        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
-            <Label x:Name="NameLabel" 
-                   FontSize="30" 
-                   TextColor="Black"
-                   VerticalOptions="Center"/>
+    <ScrollView>
+        <VerticalStackLayout WidthRequest="400" Padding="20" Spacing="20">
 
-            <Image Source="pencil_button.png" 
-                   WidthRequest="19"
-                   HeightRequest="19"
-                   VerticalOptions="Center">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnChangeNameClicked"/>
-                </Image.GestureRecognizers>
-            </Image>
-        </HorizontalStackLayout>
+            <Frame BackgroundColor="White" 
+                   CornerRadius="20" 
+                   Padding="25"
+                   HasShadow="True">
+                <VerticalStackLayout Spacing="20" HorizontalOptions="Center">
 
-        <Grid x:Name="EditNameContainer" 
-              IsVisible="False"
-              HorizontalOptions="Center"
-              Margin="0,10,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                    <Border Stroke="#14D0FF" 
+                            StrokeThickness="3"
+                            WidthRequest="100" 
+                            HeightRequest="100"
+                            BackgroundColor="White">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="50"/>
+                        </Border.StrokeShape>
+                        <Image x:Name="ProfileImage" 
+                               Source="profile_button.png"
+                               Aspect="AspectFill">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnImageClicked"/>
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
 
-            <Entry x:Name="NameEntry" 
-                   Grid.Column="0"
-                   WidthRequest="200"
-                   Text="{Binding Source={x:Reference NameLabel}, Path=Text}"
-                   FontSize="20"
-                   HorizontalOptions="Center"
-                   TextColor="Black"
-                   MaxLength="20"/>
+                    <VerticalStackLayout Spacing="10">
+                        <Label x:Name="NameLabel" 
+                               Text="Пользователь"
+                               FontSize="24"
+                               FontAttributes="Bold"
+                               TextColor="Black"
+                               HorizontalOptions="Center"/>
 
-            <Button Grid.Column="1"
-                    Text="✓"
+                        <VerticalStackLayout x:Name="EditNameContainer" 
+                                           IsVisible="False" 
+                                           Spacing="10">
+                            <Entry x:Name="NameEntry" 
+                                   Placeholder="Введите новое имя"
+                                   FontSize="16"
+                                   HorizontalOptions="Center"
+                                   WidthRequest="200"/>
+                            <Button Text="Сохранить"
+                                    FontSize="14"
+                                    BackgroundColor="#14D0FF"
+                                    TextColor="White"
+                                    CornerRadius="15"
+                                    Padding="15,8"
+                                    HorizontalOptions="Center"
+                                    Clicked="OnSaveNameClicked"/>
+                        </VerticalStackLayout>
+
+                        <Button Text="Изменить имя"
+                                FontSize="12"
+                                BackgroundColor="Transparent"
+                                TextColor="#14D0FF"
+                                Clicked="OnChangeNameClicked"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame BackgroundColor="White" 
+                   CornerRadius="20" 
+                   Padding="20"
+                   HasShadow="True">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Настройки"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="Black"
+                           Margin="0,0,0,10"/>
+                    
+                    <HorizontalStackLayout Spacing="15">
+                        <Label Text="🔊"
+                               FontSize="20"
+                               VerticalOptions="Center"/>
+                        <Button x:Name="SoundButton"
+                                Text="Звук включен"
+                                FontSize="14"
+                                BackgroundColor="#E6F9FF"
+                                TextColor="Black"
+                                CornerRadius="15"
+                                Padding="15,8"
+                                HorizontalOptions="FillAndExpand"
+                                Clicked="OnSoundClicked"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="15">
+                        <Label Text="📝"
+                               FontSize="20"
+                               VerticalOptions="Center"/>
+                        <Button Text="Пройти опрос заново"
+                                FontSize="14"
+                                BackgroundColor="#14D0FF"
+                                TextColor="White"
+                                CornerRadius="15"
+                                Padding="15,8"
+                                HorizontalOptions="FillAndExpand"
+                                Clicked="OnSurveyClicked"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="15">
+                        <Label Text="📷"
+                               FontSize="20"
+                               VerticalOptions="Center"/>
+                        <Button Text="Изменить фото профиля"
+                                FontSize="14"
+                                BackgroundColor="#E6F9FF"
+                                TextColor="Black"
+                                CornerRadius="15"
+                                Padding="15,8"
+                                HorizontalOptions="FillAndExpand"
+                                Clicked="OnImageClicked"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame BackgroundColor="White" 
+       CornerRadius="20" 
+       Padding="20"
+       HasShadow="True">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Статистика"
+               FontSize="20"
+               FontAttributes="Bold"
+               TextColor="Black"
+               Margin="0,0,0,10"/>
+
+                    <Grid ColumnDefinitions="*,*" 
+              RowDefinitions="Auto" 
+              RowSpacing="15" 
+              ColumnSpacing="15">
+
+                        <Frame Grid.Column="0" 
+                   BackgroundColor="#E6F9FF" 
+                   CornerRadius="10"
+                   Padding="15"
+                   HeightRequest="120">
+   
+                          
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="❤️" FontSize="24" HorizontalOptions="Center"/>
+                                <Label x:Name="FavoritePlacesCountLabel" 
+                           Text="0" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="Black" 
+                           HorizontalOptions="Center"/>
+                                <Label Text="Избранных мест" 
+                           FontSize="12" 
+                           TextColor="#666" 
+                           HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Frame>
+
+                        <Frame Grid.Column="1" 
+                   BackgroundColor="#E6F9FF" 
+                   CornerRadius="10"
+                   Padding="15"
+                   HeightRequest="120">
+
+                            
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="📅" FontSize="24" HorizontalOptions="Center"/>
+                                <Label x:Name="DaysCountLabel" 
+                           Text="1" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="Black" 
+                           HorizontalOptions="Center"/>
+                                <Label Text="Дней с нами" 
+                           FontSize="12" 
+                           TextColor="#666" 
+                           HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+
+            <Button Text="🏠 Вернуться на главную"
                     FontSize="16"
-                    WidthRequest="40"
-                    BackgroundColor="Transparent"
-                    TextColor="#14D0FF"
-                    Clicked="OnSaveNameClicked"/>
-        </Grid>
+                    BackgroundColor="#14D0FF"
+                    TextColor="White"
+                    CornerRadius="20"
+                    Padding="20,15"
+                    Margin="0,10,0,20"
+                    Clicked="OnMainClicked">
+                <Button.Shadow>
+                    <Shadow Opacity="0.25" Radius="4" Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
 
-        <Button Text="Пройти опрос заново"
-                Clicked="OnSurveyClicked"
-                IsEnabled="True"
-                BackgroundColor="White"
-                TextColor="Black"
-                WidthRequest="300"
-                HeightRequest="50"
-                LineBreakMode="WordWrap"                    
-                Margin="0, 65, 0, 20">
-            <Button.Shadow>
-                <Shadow Opacity="0.25" 
-                        Radius="4" 
-                        Offset="0, 4"/>
-            </Button.Shadow>
-        </Button>
-
-        <Button
-                Clicked="OnSoundClicked"
-                IsEnabled="True"
-                BackgroundColor="White"
-                TextColor="Black"
-                WidthRequest="300"
-                LineBreakMode="WordWrap"
-                Margin="0, 0, 0, 20"
-                x:Name="SoundButton">
-            <Button.Shadow>
-                <Shadow Opacity="0.25" 
-                        Radius="4" 
-                        Offset="0, 4"/>
-            </Button.Shadow>
-        </Button>
-
-        <Button Text="Изменить изображение"
-                Clicked="OnImageClicked"
-                IsEnabled="True"
-                BackgroundColor="White"
-                TextColor="Black"
-                WidthRequest="300"
-                Margin="0, 0, 0, 20"
-                LineBreakMode="WordWrap">
-            <Button.Shadow>
-                <Shadow Opacity="0.25" 
-                        Radius="4" 
-                        Offset="0, 4"/>
-            </Button.Shadow>
-        </Button>
-
-
-        <Button Text="Назад"
-                Clicked="OnMainClicked"
-                IsEnabled="True"
-                BackgroundColor="White"
-                TextColor="Black"
-                WidthRequest="300"
-                LineBreakMode="WordWrap">
-            <Button.Shadow>
-                <Shadow Opacity="0.25" 
-                        Radius="4" 
-                        Offset="0, 4"/>
-            </Button.Shadow>
-        </Button>
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

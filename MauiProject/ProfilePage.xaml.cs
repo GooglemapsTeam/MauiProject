@@ -1,4 +1,5 @@
-using Plugin.Maui.Audio;
+using Emotional_Map.Models;
+using Emotional_Map.Services;
 
 namespace Emotional_Map;
 
@@ -7,67 +8,130 @@ public partial class ProfilePage : ContentPage
     public ProfilePage()
     {
         InitializeComponent();
-        NameLabel.Text = Preferences.Get("Name", "Пользователь");
-        SoundButton.Text = AudioPlayer.DoesOn ? "Выключить звук" : "Включить звук";
-        ProfileImage.Source = AppImageHelper.CachedImage;
     }
 
-    protected async override void OnNavigatedTo(NavigatedToEventArgs args)
+    protected override void OnAppearing()
     {
-        base.OnNavigatedTo(args);
-        ProfileImage.Source = AppImageHelper.CachedImage;
+        base.OnAppearing();
+        LoadProfile();
+        LoadStatistics();
     }
 
-    public async void OnSurveyClicked(object sender, EventArgs e)
+    private void LoadProfile()
     {
-        NameEntry.Unfocus();
+        var userName = Preferences.Get("Name", "Пользователь");
+        NameLabel.Text = userName;
+
+        var profileImagePath = Preferences.Get("ProfileImagePath", "");
+        if (!string.IsNullOrEmpty(profileImagePath))
+        {
+            ProfileImage.Source = profileImagePath;
+        }
+        else
+        {
+            ProfileImage.Source = "profile_button.png";
+        }
+        var soundEnabled = Preferences.Get("SoundEnabled", true);
+        SoundButton.Text = soundEnabled ? "Звук включен" : "Звук выключен";
+    }
+
+    private void LoadStatistics()
+    {
+        try
+        {
+            var favoritePlaces = Preferences.Get("FavoritePlaces", "");
+            var favoritePlacesCount = string.IsNullOrEmpty(favoritePlaces) ? 0 :
+                                    favoritePlaces.Split(',', StringSplitOptions.RemoveEmptyEntries).Length;
+            FavoritePlacesCountLabel.Text = favoritePlacesCount.ToString();
+            var firstUseDate = Preferences.Get("FirstUseDate", DateTime.Now.ToString());
+            if (DateTime.TryParse(firstUseDate, out var firstUse))
+            {
+                var daysUsing = (DateTime.Now - firstUse).Days + 1;
+                DaysCountLabel.Text = daysUsing.ToString();
+            }
+            else
+            {
+                Preferences.Set("FirstUseDate", DateTime.Now.ToString());
+                DaysCountLabel.Text = "1";
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Ошибка загрузки статистики: {ex.Message}");
+        }
+    }
+
+    private void OnChangeNameClicked(object sender, EventArgs e)
+    {
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        await Shell.Current.GoToAsync("//" + nameof(ThirdSurveyPage), true);
-    }
-
-    public void OnChangeNameClicked(object sender, EventArgs e)
-    {
         EditNameContainer.IsVisible = true;
-        NameEntry.Focus(); 
+        NameEntry.Text = NameLabel.Text;
+        NameEntry.Focus();
     }
 
-    private async void OnSaveNameClicked(object sender, EventArgs e)
+    private void OnSaveNameClicked(object sender, EventArgs e)
     {
-        NameLabel.Text = NameEntry.Text.Trim();
-        Preferences.Set("Name", NameLabel.Text);
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+        if (!string.IsNullOrWhiteSpace(NameEntry.Text))
+        {
+            Preferences.Set("Name", NameEntry.Text);
+            NameLabel.Text = NameEntry.Text;
+        }
+
         EditNameContainer.IsVisible = false;
-        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        NameEntry.Unfocus();
     }
 
-    private async void OnSoundClicked(object sender, EventArgs e)
+    private async void OnSurveyClicked(object sender, EventArgs e)
     {
-        AudioPlayer.DoesOn = !AudioPlayer.DoesOn;
-        SoundButton.Text = AudioPlayer.DoesOn ? "Выключить звук" : "Включить звук";
-        Preferences.Set("DoesSoundOn", AudioPlayer.DoesOn);
-        NameEntry.Unfocus();
-        Navigation.RemovePage(this);
-        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+        try
+        {
+            AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+
+            var result = await DisplayAlert("Пройти опрос заново",
+                "Вы хотите пройти опрос заново? Это поможет получить новые персонализированные рекомендации.",
+                "Да, пройти опрос", "Отмена");
+
+            if (result)
+            {
+                var clearAnswers = await DisplayAlert("Очистить ответы",
+                    "Хотите начать опрос с чистого листа или сохранить предыдущие ответы?",
+                    "Начать заново", "Сохранить ответы");
+
+                if (clearAnswers)
+                {
+                    AppStateService.ResetSurvey();
+                }
+
+                await Shell.Current.GoToAsync("//" + nameof(FirstSurveyPage), true);
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Ошибка", $"Не удалось перейти к опросу: {ex.Message}", "OK");
+        }
     }
 
-    private async void OnMainClicked(object sender, EventArgs e)
+    private void OnSoundClicked(object sender, EventArgs e)
     {
-        NameEntry.Unfocus();
-        Navigation.RemovePage(this);
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        await Navigation.PushAsync(new MainPage());
-    }
 
-    private async void OnConnectionClicked(object sender, EventArgs e)
-    {
-        NameEntry.Unfocus();
-        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        throw new NotImplementedException();
+        var soundEnabled = Preferences.Get("SoundEnabled", true);
+        soundEnabled = !soundEnabled;
+        Preferences.Set("SoundEnabled", soundEnabled);
+
+        SoundButton.Text = soundEnabled ? "Звук включен" : "Звук выключен";
     }
 
     private async void OnImageClicked(object sender, EventArgs e)
     {
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
         await Shell.Current.GoToAsync("//" + nameof(ProfileImageSetPage), true);
+    }
+
+    private async void OnMainClicked(object sender, EventArgs e)
+    {
+        AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
+        await Shell.Current.GoToAsync("//" + nameof(MainPage), true);
     }
 }

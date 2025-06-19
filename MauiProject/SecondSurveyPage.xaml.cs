@@ -1,17 +1,25 @@
-namespace Emotional_Map;
+п»їnamespace Emotional_Map;
 
 public partial class SecondSurveyPage : ContentPage
 {
-	public SecondSurveyPage()
-	{
-		InitializeComponent();
-        HeaderLabel.Text = String.Format("Супер! Приятно познакомиться, {0}! Осталось пару шагов", Preferences.Get("Name", "Пользователь"));
-	}
+    public SecondSurveyPage()
+    {
+        InitializeComponent();
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        var userName = Preferences.Get("Name", "");
+        if (!string.IsNullOrEmpty(userName))
+        {
+            HeaderLabel.Text = $"РџСЂРёРІРµС‚, {userName}! рџ‘‹";
+        }
+    }
 
     private async void OnNextClicked(object sender, EventArgs e)
     {
         AudioPlayer.PlaySound(AudioPlayer.ButtonClickSound);
-        await Shell.Current.GoToAsync("//" + nameof(ProfileImageSetPage), true);
+        await Shell.Current.GoToAsync("//" + nameof(ThirdSurveyPage), true);
     }
-
 }

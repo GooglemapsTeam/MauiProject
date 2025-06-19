@@ -1,197 +1,69 @@
-﻿using System.Diagnostics;
-
-namespace Emotional_Map
+﻿namespace Emotional_Map.Services
 {
     public class LocationService
     {
-        // Singleton instance
         private static LocationService _instance;
         public static LocationService Instance => _instance ??= new LocationService();
 
-        // Последнее известное местоположение
-        private Location _lastKnownLocation;
-
-        // Флаг, указывающий, запрашиваются ли в данный момент разрешения
-        private bool _isRequestingPermissions;
-
-        // Private constructor for singleton
         private LocationService() { }
 
-        /// <summary>
-        /// Проверяет и запрашивает разрешения на использование геолокации
-        /// </summary>
-        /// <returns>True, если разрешения предоставлены, иначе False</returns>
-        public async Task<bool> CheckAndRequestLocationPermissionsAsync()
+        public async Task<Location> GetCurrentLocationAsync()
         {
-            if (_isRequestingPermissions)
-                return false;
-
             try
             {
-                _isRequestingPermissions = true;
-
                 var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-
                 if (status != PermissionStatus.Granted)
                 {
-                    Debug.WriteLine("Запрашиваем разрешение на использование геолокации...");
                     status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-
                     if (status != PermissionStatus.Granted)
                     {
-                        Debug.WriteLine("Разрешение на использование геолокации не предоставлено");
-                        await Application.Current.MainPage.DisplayAlert(
-                            "Требуется разрешение",
-                            "Для построения маршрута необходим доступ к вашему местоположению. Пожалуйста, предоставьте разрешение в настройках приложения.",
-                            "OK");
-                        return false;
+                        System.Diagnostics.Debug.WriteLine("Разрешение на геолокацию не предоставлено");
+                        return GetDefaultLocation();
                     }
                 }
 
-                Debug.WriteLine("Разрешение на использование геолокации предоставлено");
-                return true;
+                var request = new GeolocationRequest
+                {
+                    DesiredAccuracy = GeolocationAccuracy.Medium,
+                    Timeout = TimeSpan.FromSeconds(15)
+                };
+
+                var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                var location = await Geolocation.Default.GetLocationAsync(request, cancellationToken.Token);
+
+                if (location != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Получено местоположение: {location.Latitude}, {location.Longitude}");
+                    return location;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Местоположение не получено, используем по умолчанию");
+                    return GetDefaultLocation();
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при запросе разрешений: {ex.Message}");
-                return false;
-            }
-            finally
-            {
-                _isRequestingPermissions = false;
+                System.Diagnostics.Debug.WriteLine($"Ошибка получения местоположения: {ex.Message}");
+                return GetDefaultLocation();
             }
         }
 
-        /// <summary>
-        /// Получает текущее местоположение пользователя с таймаутом и повторными попытками
-        /// </summary>
-        /// <param name="useLastKnownLocation">Использовать последнее известное местоположение в случае ошибки</param>
-        /// <param name="maxRetries">Максимальное количество повторных попыток</param>
-        /// <returns>Объект Location с координатами или null в случае ошибки</returns>
-        public async Task<Location> GetCurrentLocationAsync(bool useLastKnownLocation = true, int maxRetries = 3)
+        private Location GetDefaultLocation()
         {
-            // Проверяем разрешения
-            if (!await CheckAndRequestLocationPermissionsAsync())
-            {
-                Debug.WriteLine("Нет разрешений для получения местоположения");
-                return useLastKnownLocation ? _lastKnownLocation : null;
-            }
-
-            for (int retry = 0; retry < maxRetries; retry++)
-            {
-                try
-                {
-                    Debug.WriteLine($"Попытка получения местоположения {retry + 1}/{maxRetries}");
-
-                    // Настройки геолокации с таймаутом
-                    GeolocationRequest request = new GeolocationRequest(
-                        GeolocationAccuracy.Best,
-                        TimeSpan.FromSeconds(10));
-
-                    // Используем токен отмены для ограничения времени ожидания
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-
-                    // Получаем текущее местоположение
-                    Location location = await Geolocation.GetLocationAsync(request, cts.Token);
-
-                    if (location != null)
-                    {
-                        Debug.WriteLine($"Местоположение получено: {location.Latitude}, {location.Longitude}");
-                        _lastKnownLocation = location; // Сохраняем последнее известное местоположение
-                        return location;
-                    }
-                }
-                catch (FeatureNotSupportedException)
-                {
-                    Debug.WriteLine("Геолокация не поддерживается на этом устройстве");
-                    await Application.Current.MainPage.DisplayAlert(
-                        "Ошибка",
-                        "Геолокация не поддерживается на этом устройстве",
-                        "OK");
-                    return useLastKnownLocation ? _lastKnownLocation : null;
-                }
-                catch (FeatureNotEnabledException)
-                {
-                    Debug.WriteLine("Геолокация отключена на устройстве");
-                    bool openSettings = await Application.Current.MainPage.DisplayAlert(
-                        "Геолокация отключена",
-                        "Для построения маршрута необходимо включить геолокацию в настройках устройства. Открыть настройки?",
-                        "Да", "Нет");
-
-                    if (openSettings)
-                    {
-                        // Открываем настройки геолокации
-                        await OpenLocationSettings();
-                    }
-
-                    return useLastKnownLocation ? _lastKnownLocation : null;
-                }
-                catch (PermissionException)
-                {
-                    Debug.WriteLine("Нет разрешения на использование геолокации");
-                    await CheckAndRequestLocationPermissionsAsync();
-                    // Продолжаем цикл для повторной попытки
-                }
-                catch (TaskCanceledException)
-                {
-                    Debug.WriteLine("Превышено время ожидания получения местоположения");
-                    // Продолжаем цикл для повторной попытки с увеличенным таймаутом
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Ошибка при получении местоположения: {ex.Message}");
-                    // Продолжаем цикл для повторной попытки
-                }
-
-                // Небольшая задержка перед следующей попыткой
-                if (retry < maxRetries - 1)
-                {
-                    await Task.Delay(1000);
-                }
-            }
-
-            Debug.WriteLine("Не удалось получить местоположение после нескольких попыток");
-
-            // Возвращаем последнее известное местоположение, если оно есть и если это разрешено
-            if (useLastKnownLocation && _lastKnownLocation != null)
-            {
-                Debug.WriteLine($"Используем последнее известное местоположение: {_lastKnownLocation.Latitude}, {_lastKnownLocation.Longitude}");
-                return _lastKnownLocation;
-            }
-
-            // Если нет последнего известного местоположения или его использование запрещено, используем фиксированное местоположение
-            if (await Application.Current.MainPage.DisplayAlert(
-                "Не удалось получить местоположение",
-                "Хотите использовать стандартное местоположение для построения маршрута?",
-                "Да", "Нет"))
-            {
-                // Возвращаем фиксированное местоположение (например, центр Москвы)
-                return new Location(55.751244, 37.618423);
-            }
-
-            return null;
+            return new Location(56.8431, 60.6454);
         }
 
-        /// <summary>
-        /// Открывает настройки геолокации на устройстве
-        /// </summary>
-        private async Task OpenLocationSettings()
+        public async Task<bool> IsLocationAvailableAsync()
         {
             try
             {
-                // Открываем настройки геолокации
-#if ANDROID
-                Android.Content.Intent intent = new Android.Content.Intent(Android.Provider.Settings.ActionLocationSourceSettings);
-                Android.App.Application.Context.StartActivity(intent);
-#endif
+                var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+                return status == PermissionStatus.Granted;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Ошибка при открытии настроек геолокации: {ex.Message}");
-                await Application.Current.MainPage.DisplayAlert(
-                    "Ошибка",
-                    "Не удалось открыть настройки геолокации. Пожалуйста, включите геолокацию вручную в настройках устройства.",
-                    "OK");
+                return false;
             }
         }
     }
