@@ -1,81 +1,50 @@
 ﻿using Plugin.Maui.Audio;
-using System.Collections.Concurrent;
 
-public static class AudioPlayer
+namespace Emotional_Map
 {
-    private static readonly ConcurrentDictionary<string, IAudioPlayer> _activePlayers = new();
-    private static bool _isDisposed;
-    public static bool DoesOn { get; set; }
-
-
-    public const string ButtonClickSound = "button_click.wav";
-    public const string ToPathButtonClickSound = "to_path_button_click.wav";
-    public const string SlideSound = "slide.mp3";
-
-    static AudioPlayer()
+    public static class AudioPlayer
     {
-        DoesOn = Preferences.Get("DoesSoundOn", true);
-    }
+        private static IAudioManager _audioManager;
+        internal static string SlideSound;
 
-    public static void PlaySound(string sound)
-    {
-        if (!DoesOn) return;
-        if (_isDisposed)
-            throw new InvalidOperationException("AudioPlayer has been disposed");
+        public static string ButtonClickSound => "button_click.wav";
 
-        Task.Run(async () =>
+        public static string ToPathButtonClickSound { get; internal set; }
+
+        static AudioPlayer()
         {
             try
             {
-                if (_activePlayers.TryRemove(sound, out var oldPlayer))
-                {
-                    oldPlayer.Dispose();
-                }
-
-                var audioPlayer = AudioManager.Current.CreatePlayer(
-                    await FileSystem.OpenAppPackageFileAsync(sound));
-
-                if (!_activePlayers.TryAdd(sound, audioPlayer))
-                {
-                    audioPlayer.Dispose();
-                    return;
-                }
-
-                audioPlayer.PlaybackEnded += OnPlaybackEnded;
-                audioPlayer.Play();
+                _audioManager = AudioManager.Current;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-            }
-        });
-    }
-
-    private static void OnPlaybackEnded(object sender, EventArgs e)
-    {
-        if (sender is IAudioPlayer player)
-        {
-            var item = _activePlayers.FirstOrDefault(x => x.Value == player);
-            if (!string.IsNullOrEmpty(item.Key))
-            {
-                _activePlayers.TryRemove(item.Key, out _);
-                player.Dispose();
+                System.Diagnostics.Debug.WriteLine($"Ошибка инициализации AudioManager: {ex.Message}");
             }
         }
-    }
 
-    public static void Cleanup()
-    {
-        if (_isDisposed) return;
-
-        _isDisposed = true;
-
-        foreach (var player in _activePlayers.Values)
+        public static async void PlaySound(string soundFile)
         {
-            player.Stop();
-            player.Dispose();
+            try
+            {
+                var soundEnabled = Preferences.Get("SoundEnabled", true);
+                if (!soundEnabled) return;
+
+                if (_audioManager != null)
+                {
+                    var audioPlayer = _audioManager.CreatePlayer(await FileSystem.OpenAppPackageFileAsync(soundFile));
+                    audioPlayer.Play();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка воспроизведения звука: {ex.Message}");
+            }
         }
 
-        _activePlayers.Clear();
+        internal static void PlaySound(object slideSound)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,34 +1,45 @@
-﻿namespace Emotional_Map
+﻿namespace Emotional_Map.Models
 {
     public class Place
     {
-        public Place(string v1, string v2, string v3)
-        {
-            V1 = v1;
-            V2 = v2;
-            V3 = v3;
-        }
-
-        public string Title { get; set; }
-        public string Description { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string District { get; set; }
+        public string Company { get; set; }
+        public string Budget { get; set; }
+        public string Time { get; set; }
+        public string Activity { get; set; }
+        public string Mood { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public string Description { get; set; }
         public string ImageSource { get; set; }
-        public string V1 { get; }
-        public string V2 { get; }
-        public string V3 { get; }
+        public string Title { get; internal set; }
 
-        public class RouteData
+        public Place(int id, string name, string district, string company, string budget,
+                    string time, string activity, string mood, double latitude, double longitude,
+                    string description, string imageSource = "placeholder.png")
         {
-            public List<RoutePoint> Points { get; set; }
-            public string RouteType { get; set; } = "pedestrian"; 
+            Id = id;
+            Name = name;
+            District = district;
+            Company = company;
+            Budget = budget;
+            Time = time;
+            Activity = activity;
+            Mood = mood;
+            Latitude = latitude;
+            Longitude = longitude;
+            Description = description;
+            ImageSource = imageSource;
         }
+    }
 
-        public class RoutePoint
-        {
-            public string Title { get; set; }
-            public double Latitude { get; set; }
-            public double Longitude { get; set; }
-        }
+    public class RouteData
+    {
+        public List<Place> Places { get; set; } = new List<Place>();
+        public string RouteType { get; set; } = "pedestrian";
+        public double TotalDistance { get; set; }
+        public int EstimatedTime { get; set; }
     }
 }
