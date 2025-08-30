@@ -1,8 +1,8 @@
 ﻿<maui:MauiWinUIApplication
-    x:Class="MauiProject.WinUI.App"
+    x:Class="Emotional_Map.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:maui="using:Microsoft.Maui"
-    xmlns:local="using:MauiProject.WinUI">
+    xmlns:local="using:Emotional_Map.WinUI">
 
 </maui:MauiWinUIApplication>

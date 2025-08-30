@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Emotional_Map.FirstSurveyPage"
+             BackgroundColor="White">
+
+    <Grid Padding="0, 20, 0, 20"
+          RowDefinitions="*, Auto">
+
+        <Image Source="stain.png" 
+               Aspect="AspectFit"
+               Grid.RowSpan="2"/>
+
+        <VerticalStackLayout Grid.Row="0"
+                             HeightRequest="112"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Margin="0, -300, 0, 0"
+                             Spacing="20"
+                             WidthRequest="450">
+
+            <Label Text="Давайте познакомимся!"
+                   FontSize="30"
+                   TextColor="Black"
+                   HorizontalOptions="Center"/>
+
+            <Entry Placeholder="Введите имя"
+                   FontSize="15"
+                   PlaceholderColor="#757575"
+                   TextColor="Black"
+                   BackgroundColor="#E6F9FF"
+                   x:Name="NameEntry"
+                   TextChanged="NameEntryTextChanged"
+                   WidthRequest="300"
+                   HorizontalOptions="Center"
+                   MaxLength="20">
+                <Entry.Shadow>
+                    <Shadow Opacity="0.25" Radius="4" Offset="0, 4"/>
+                </Entry.Shadow>
+                <Entry.Keyboard>
+                    <Keyboard x:FactoryMethod="Create">
+                        <x:Arguments>
+                            <KeyboardFlags>CapitalizeWord</KeyboardFlags>
+                        </x:Arguments>
+                    </Keyboard>
+                </Entry.Keyboard>
+            </Entry>
+        </VerticalStackLayout>
+
+        <Button Grid.Row="1"
+                Text="Продолжить"
+                Clicked="OnNextClicked"
+                HorizontalOptions="Center"
+                IsEnabled="False"
+                x:Name="NextButton"
+                BackgroundColor="#E6F9FF"
+                TextColor="#757575"
+                Margin="0, 0, 0, 20">
+            <Button.Shadow>
+                <Shadow Opacity="0.25" Radius="4" Offset="0, 4"/>
+            </Button.Shadow>
+        </Button>
+
+    </Grid>
+</ContentPage>

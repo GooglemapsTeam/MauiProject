@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Emotional_Map.ProfileImageSetPage"
+             Title="ProfileImageSetPage"
+             BackgroundColor="White">
+
+    <Grid Padding="0, 20, 0, 20"
+          RowDefinitions="*, Auto">
+
+        <Image Source="stain.png" 
+               Aspect="AspectFit"
+               Grid.RowSpan="2"/>
+
+        <Grid Grid.Row="0"
+              VerticalOptions="Start"
+              HorizontalOptions="Center"
+              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+              RowSpacing="20"
+              WidthRequest="300">
+
+            <Label Text="Установите фото профиля"
+                   FontSize="30"
+                   TextColor="Black"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   Grid.Row="0"/>
+
+            <Border Stroke="Transparent" 
+                    WidthRequest="120" 
+                    HeightRequest="120"
+                    Grid.Row="1">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="60,60,60,60" />
+                </Border.StrokeShape>
+                <Image Aspect="AspectFill" 
+                       x:Name="profileImage"
+                       Source="profile_button.png"/>
+            </Border>
+
+            <Button Text="Выбрать фото из галереи"
+                    Clicked="OnChooseFromGalleryClicked"
+                    HorizontalOptions="Center"
+                    IsEnabled="True"
+                    BackgroundColor="#E6F9FF"
+                    TextColor="Black"
+                    WidthRequest="300"
+                    Grid.Row="2">
+                <Button.Shadow>
+                    <Shadow Opacity="0.25" 
+                            Radius="4" 
+                            Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
+
+            <Button
+                Text="Сделать фото"
+                Clicked="OnTakeSelfieClicked"
+                HorizontalOptions="Center"
+                IsEnabled="True"
+                BackgroundColor="#E6F9FF"
+                TextColor="Black"
+                WidthRequest="300"
+                Grid.Row="3">
+                <Button.Shadow>
+                                <Shadow Opacity="0.25" 
+                            Radius="4" 
+                            Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
+
+            <Button Text="Продолжить без фото"
+                    Clicked="OnSkipClicked"
+                    HorizontalOptions="Center"
+                    IsEnabled="True"
+                    BackgroundColor="#E6F9FF"
+                    TextColor="Black"
+                    WidthRequest="300"
+                    Grid.Row="4">
+                <Button.Shadow>
+                    <Shadow Opacity="0.25" 
+                            Radius="4" 
+                            Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
+
+            <Button Text="Далее"
+                    Clicked="OnNextClicked"
+                    x:Name="NextButton"
+                    IsVisible="Hidden"
+                    HorizontalOptions="Center"
+                    IsEnabled="True"
+                    BackgroundColor="#E6F9FF"
+                    TextColor="Black"
+                    WidthRequest="300"
+                    Grid.Row="5">
+                <Button.Shadow>
+                    <Shadow Opacity="0.25" 
+                            Radius="4" 
+                            Offset="0, 4"/>
+                </Button.Shadow>
+            </Button>
+
+        </Grid>
+    </Grid>
+</ContentPage>
